@@ -42,7 +42,6 @@ export default function Navigation({ openAuthModal }) {
     }, []);
 
     const scrollToSection = (sectionId) => {
-        // If not on home page, navigate to home first
         if (location.pathname !== '/') {
             navigate('/');
             setTimeout(() => {
@@ -168,33 +167,49 @@ export default function Navigation({ openAuthModal }) {
                             )}
                         </div>
 
-                        {/* Mobile Menu Button */}
-                        <motion.button
-                            whileTap={{ scale: 0.9 }}
-                            onClick={() => setIsOpen(!isOpen)}
-                            className="md:hidden relative w-10 h-10 flex items-center justify-center"
-                        >
-                            <div className="flex flex-col space-y-1.5">
-                                <motion.span 
-                                    animate={{
-                                        rotate: isOpen ? 45 : 0,
-                                        y: isOpen ? 8 : 0,
-                                    }}
-                                    className="w-6 h-0.5 bg-gray-900 block"
-                                />
-                                <motion.span 
-                                    animate={{ opacity: isOpen ? 0 : 1 }}
-                                    className="w-6 h-0.5 bg-gray-900 block"
-                                />
-                                <motion.span 
-                                    animate={{
-                                        rotate: isOpen ? -45 : 0,
-                                        y: isOpen ? -8 : 0,
-                                    }}
-                                    className="w-6 h-0.5 bg-gray-900 block"
-                                />
-                            </div>
-                        </motion.button>
+                        {/* Mobile - Login Button + Hamburger */}
+                        <div className="md:hidden flex items-center gap-3">
+                            {/* Mobile Login Button - Always visible when not logged in */}
+                            {!isLoggedIn && (
+                                <motion.button
+                                    whileHover={{ scale: 1.05 }}
+                                    whileTap={{ scale: 0.95 }}
+                                    onClick={openAuthModal}
+                                    className="px-4 py-2 bg-green-800 text-white rounded-full text-sm font-medium hover:bg-green-900 transition-all shadow-md"
+                                >
+                                    Login
+                                </motion.button>
+                            )}
+
+                            {/* Hamburger Menu Button */}
+                            <motion.button
+                                whileTap={{ scale: 0.9 }}
+                                onClick={() => setIsOpen(!isOpen)}
+                                className="relative w-10 h-10 flex items-center justify-center"
+                                aria-label="Toggle menu"
+                            >
+                                <div className="flex flex-col space-y-1.5">
+                                    <motion.span 
+                                        animate={{
+                                            rotate: isOpen ? 45 : 0,
+                                            y: isOpen ? 8 : 0,
+                                        }}
+                                        className="w-6 h-0.5 bg-gray-900 block"
+                                    />
+                                    <motion.span 
+                                        animate={{ opacity: isOpen ? 0 : 1 }}
+                                        className="w-6 h-0.5 bg-gray-900 block"
+                                    />
+                                    <motion.span 
+                                        animate={{
+                                            rotate: isOpen ? -45 : 0,
+                                            y: isOpen ? -8 : 0,
+                                        }}
+                                        className="w-6 h-0.5 bg-gray-900 block"
+                                    />
+                                </div>
+                            </motion.button>
+                        </div>
                     </div>
                 </div>
 
@@ -224,49 +239,40 @@ export default function Navigation({ openAuthModal }) {
                                 </motion.button>
                             ))}
 
-                            <div className="pt-2 border-t border-gray-200 space-y-2">
-                                {isLoggedIn ? (
-                                    <>
-                                        <motion.div 
-                                            initial={{ opacity: 0 }}
-                                            animate={{ opacity: 1 }}
-                                            onClick={handleUserClick}
-                                            className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg cursor-pointer hover:bg-gray-100 transition-all"
-                                        >
-                                            <div className="w-12 h-12 rounded-full bg-green-800 text-white flex items-center justify-center text-lg font-bold">
-                                                {isBlogger ? <FaPen size={18} /> : <FaUser size={18} />}
-                                            </div>
-                                            <div className="flex-1">
-                                                <p className="font-medium text-gray-900">
-                                                    {user?.username || user?.name || user?.email}
-                                                </p>
-                                                {isBlogger && (
-                                                    <span className="inline-block mt-1 text-xs font-semibold text-green-700 bg-green-100 px-2 py-0.5 rounded-full">
-                                                        {user?.niche}
-                                                    </span>
-                                                )}
-                                            </div>
-                                        </motion.div>
+                            {/* Mobile Menu - User Section (only show if logged in) */}
+                            {isLoggedIn && (
+                                <div className="pt-2 border-t border-gray-200 space-y-2">
+                                    <motion.div 
+                                        initial={{ opacity: 0 }}
+                                        animate={{ opacity: 1 }}
+                                        onClick={handleUserClick}
+                                        className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg cursor-pointer hover:bg-gray-100 transition-all"
+                                    >
+                                        <div className="w-12 h-12 rounded-full bg-green-800 text-white flex items-center justify-center text-lg font-bold">
+                                            {isBlogger ? <FaPen size={18} /> : <FaUser size={18} />}
+                                        </div>
+                                        <div className="flex-1">
+                                            <p className="font-medium text-gray-900">
+                                                {user?.username || user?.name || user?.email}
+                                            </p>
+                                            {isBlogger && (
+                                                <span className="inline-block mt-1 text-xs font-semibold text-green-700 bg-green-100 px-2 py-0.5 rounded-full">
+                                                    {user?.niche}
+                                                </span>
+                                            )}
+                                        </div>
+                                    </motion.div>
 
-                                        <motion.button
-                                            whileTap={{ scale: 0.95 }}
-                                            onClick={handleLogout}
-                                            className="w-full px-4 py-3 bg-red-600 text-white rounded-lg font-medium hover:bg-red-700 transition-colors flex items-center justify-center gap-2"
-                                        >
-                                            <FiLogOut size={18} />
-                                            Logout
-                                        </motion.button>
-                                    </>
-                                ) : (
                                     <motion.button
                                         whileTap={{ scale: 0.95 }}
-                                        onClick={openAuthModal}
-                                        className="w-full px-4 py-3 bg-green-800 text-white rounded-lg font-medium hover:bg-green-900 transition-colors"
+                                        onClick={handleLogout}
+                                        className="w-full px-4 py-3 bg-red-600 text-white rounded-lg font-medium hover:bg-red-700 transition-colors flex items-center justify-center gap-2"
                                     >
-                                        Login
+                                        <FiLogOut size={18} />
+                                        Logout
                                     </motion.button>
-                                )}
-                            </div>
+                                </div>
+                            )}
                         </div>
                     </motion.div>
                 )}

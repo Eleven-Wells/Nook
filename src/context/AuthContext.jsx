@@ -7,7 +7,6 @@ export const AuthProvider = ({ children }) => {
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
-        // Check if user is logged in on mount
         const storedUser = localStorage.getItem('user');
         if (storedUser) {
             setUser(JSON.parse(storedUser));
@@ -25,11 +24,26 @@ export const AuthProvider = ({ children }) => {
         localStorage.removeItem('user');
     };
 
+    const updateProfile = (updates) => {
+        const updatedUser = { ...user, ...updates };
+        setUser(updatedUser);
+        localStorage.setItem('user', JSON.stringify(updatedUser));
+
+        // Also update in users array
+        const users = JSON.parse(localStorage.getItem('users')) || [];
+        const userIndex = users.findIndex(u => u.email === user.email);
+        if (userIndex !== -1) {
+            users[userIndex] = updatedUser;
+            localStorage.setItem('users', JSON.stringify(users));
+        }
+    };
+
     const value = {
         user,
         loading,
         login,
         logout,
+        updateProfile,
         isLoggedIn: !!user,
         isStreamer: user?.role === 'streamer',
         isBlogger: user?.role === 'blogger'

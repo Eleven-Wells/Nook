@@ -1,4 +1,5 @@
 import React from "react";
+import { useNavigate } from "react-router-dom";
 import { FiChevronRight, FiCompass, FiBook, FiUsers, FiShare2, FiBookOpen, FiAward, FiCoffee, FiTrendingUp, FiLayers } from "react-icons/fi";
 import { FaFire } from "react-icons/fa";
 import { motion } from "framer-motion";
@@ -7,7 +8,7 @@ import { useAuth } from "../../context/AuthContext";
 const categories = [
   { title: "Popular", description: "Top picks and fan favorites of the week", icon: <FaFire size={22} /> },
   { title: "Design", description: "UI/UX principles, visual design, and creative inspiration", icon: <FiAward size={22} /> },
-  { title: "Technology", description: "Work–life balance, wellness, and personal growth", icon: <FiCoffee size={22} /> },
+  { title: "Technology", description: "Latest tech trends, tutorials, and innovations", icon: <FiCoffee size={22} /> },
   { title: "Stories", description: "Personal experiences, case studies, and insights", icon: <FiBookOpen size={22} /> },
   { title: "Productivity", description: "Trends, tools, and innovations shaping the future", icon: <FiLayers size={22} /> },
   { title: "Business", description: "Growth strategies, marketing, and entrepreneurship", icon: <FiTrendingUp size={22} /> },
@@ -32,6 +33,11 @@ const staggerContainer = {
 
 const Discover = () => {
   const { isLoggedIn } = useAuth();
+  const navigate = useNavigate();
+
+  const handleCategoryClick = (category) => {
+    navigate(`/category/${category.toLowerCase()}`);
+  };
 
   return (
     <div>
@@ -61,7 +67,7 @@ const Discover = () => {
             }
           </motion.p>
 
-          {/* Category Grid - Always Visible (Acts as Filter) */}
+          {/* Category Grid */}
           <motion.div
             className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-10"
             variants={staggerContainer}
@@ -72,6 +78,7 @@ const Discover = () => {
             {categories.map((item, index) => (
               <motion.div
                 key={index}
+                onClick={() => handleCategoryClick(item.title)}
                 className="bg-white border border-gray-200 rounded-xl p-6 hover:border-green-500 hover:shadow-xl shadow-lg transition-all duration-300 group cursor-pointer"
                 variants={fadeUp}
                 whileHover={{ scale: 1.03 }}

@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Routes, Route } from 'react-router-dom'; // ✅ Just Routes, not BrowserRouter
+import { Routes, Route } from 'react-router-dom';
 import { AuthProvider } from './context/AuthContext';
 
 import Navigation from './components/ui/Navigation.jsx';
@@ -12,6 +12,7 @@ import Discover from './components/sections/Discover.jsx';
 import AuthModal from './components/ui/AuthModal.jsx';
 import BloggerDashboard from './components/dashboard/BloggerDashboard.jsx';
 import StreamerProfile from './components/dashboard/StreamerProfile.jsx';
+import CategoryPage from './components/pages/CategoryPage.jsx';
 
 const HomePage = () => {
   return (
@@ -62,6 +63,7 @@ const App = () => {
           <Route path="/" element={<HomePage />} />
           <Route path="/dashboard" element={<BloggerDashboard />} />
           <Route path="/profile" element={<StreamerProfile />} />
+          <Route path="/category/:category" element={<CategoryPage />} />
         </Routes>
 
         <Footer />

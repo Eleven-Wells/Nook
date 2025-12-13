@@ -10,7 +10,9 @@ import {
   FaTimes,
   FaArrowLeft,
   FaPen,
-  FaHashtag
+  FaHashtag,
+  FaExclamationCircle,
+  FaCheck
 } from "react-icons/fa";
 import { MdCheckCircle } from "react-icons/md";
 
@@ -19,7 +21,7 @@ const AuthModal = ({ onClose, onLoginSuccess }) => {
   const [mode, setMode] = useState("choose");
   const [bloggerData, setBloggerData] = useState({
     username: "",
-    niche: "",
+    niches: [], // Changed from niche to niches (array)
     email: "",
     password: "",
   });
@@ -32,23 +34,91 @@ const AuthModal = ({ onClose, onLoginSuccess }) => {
     email: "",
     password: "",
   });
+  const [error, setError] = useState("");
+  const [showError, setShowError] = useState(false);
+
+  const availableNiches = [
+    'Technology',
+    'Fashion',
+    'Food',
+    'Travel',
+    'Lifestyle',
+    'Health',
+    'Business',
+    'Entertainment',
+    'Sports',
+    'Art & Design',
+    'Finance',
+    'Education'
+  ];
+
+  // Show error with animation
+  const displayError = (message) => {
+    setError(message);
+    setShowError(true);
+    setTimeout(() => setShowError(false), 5000);
+  };
+
+  // Validate email format
+  const validateEmail = (email) => {
+    return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+  };
+
+  // Handle niche selection
+  const toggleNiche = (niche) => {
+    if (bloggerData.niches.includes(niche)) {
+      // Remove niche if already selected
+      setBloggerData({
+        ...bloggerData,
+        niches: bloggerData.niches.filter(n => n !== niche)
+      });
+    } else {
+      // Add niche if not selected and less than 3
+      if (bloggerData.niches.length < 3) {
+        setBloggerData({
+          ...bloggerData,
+          niches: [...bloggerData.niches, niche]
+        });
+      } else {
+        displayError("You can only select up to 3 niches");
+      }
+    }
+  };
 
   const handleStreamerSignup = () => {
     if (!streamerData.name || !streamerData.email || !streamerData.password) {
-      alert("Please fill in all fields");
+      displayError("Please fill in all fields");
+      return;
+    }
+
+    if (!validateEmail(streamerData.email)) {
+      displayError("Please enter a valid email address");
       return;
     }
 
     if (streamerData.password.length < 6) {
-      alert("Password must be at least 6 characters");
+      displayError("Password must be at least 6 characters");
+      return;
+    }
+
+    const existingUsers = JSON.parse(localStorage.getItem('users')) || [];
+    const userExists = existingUsers.find(u => u.email === streamerData.email);
+    
+    if (userExists) {
+      displayError("An account with this email already exists. Please login instead.");
+      setTimeout(() => setMode("login"), 2000);
       return;
     }
     
     const userData = { 
       role: "streamer", 
       name: streamerData.name,
-      email: streamerData.email
+      email: streamerData.email,
+      password: streamerData.password
     };
+    
+    existingUsers.push(userData);
+    localStorage.setItem('users', JSON.stringify(existingUsers));
     
     login(userData);
     onLoginSuccess();
@@ -56,35 +126,84 @@ const AuthModal = ({ onClose, onLoginSuccess }) => {
   };
 
   const handleSocialLogin = (provider) => {
-    const userData = { 
-      role: "streamer", 
-      name: `${provider} User`,
-      email: `user@${provider.toLowerCase()}.com`,
-      provider: provider
-    };
+    const email = prompt(`Enter your ${provider} email to continue (Demo Mode):`);
     
-    login(userData);
-    onLoginSuccess();
-    onClose();
+    if (!email) {
+      return;
+    }
+
+    if (!validateEmail(email)) {
+      displayError("Please enter a valid email address");
+      return;
+    }
+
+    const existingUsers = JSON.parse(localStorage.getItem('users')) || [];
+    const existingUser = existingUsers.find(u => u.email === email);
+
+    if (existingUser) {
+      login(existingUser);
+      onLoginSuccess();
+      onClose();
+    } else {
+      const name = prompt(`Welcome! Please enter your full name:`);
+      
+      if (!name || name.trim() === "") {
+        displayError("Name is required to create an account");
+        return;
+      }
+
+      const userData = { 
+        role: "streamer", 
+        name: name.trim(),
+        email: email,
+        provider: provider,
+        password: `${provider}_${Date.now()}`
+      };
+      
+      existingUsers.push(userData);
+      localStorage.setItem('users', JSON.stringify(existingUsers));
+      
+      login(userData);
+      onLoginSuccess();
+      onClose();
+    }
   };
 
   const handleBloggerSubmit = () => {
-    if (!bloggerData.username || !bloggerData.niche || !bloggerData.email || !bloggerData.password) {
-      alert("Please fill in all fields");
+    if (!bloggerData.username || bloggerData.niches.length === 0 || !bloggerData.email || !bloggerData.password) {
+      displayError("Please fill in all fields");
+      return;
+    }
+
+    if (!validateEmail(bloggerData.email)) {
+      displayError("Please enter a valid email address");
       return;
     }
 
     if (bloggerData.password.length < 6) {
-      alert("Password must be at least 6 characters");
+      displayError("Password must be at least 6 characters");
+      return;
+    }
+
+    const existingUsers = JSON.parse(localStorage.getItem('users')) || [];
+    const userExists = existingUsers.find(u => u.email === bloggerData.email);
+    
+    if (userExists) {
+      displayError("An account with this email already exists. Please login instead.");
+      setTimeout(() => setMode("login"), 2000);
       return;
     }
     
     const userData = { 
       role: "blogger", 
       username: bloggerData.username,
-      niche: bloggerData.niche,
-      email: bloggerData.email
+      niches: bloggerData.niches, // Array of niches
+      email: bloggerData.email,
+      password: bloggerData.password
     };
+    
+    existingUsers.push(userData);
+    localStorage.setItem('users', JSON.stringify(existingUsers));
     
     login(userData);
     onLoginSuccess();
@@ -93,17 +212,30 @@ const AuthModal = ({ onClose, onLoginSuccess }) => {
 
   const handleLogin = () => {
     if (!loginData.email || !loginData.password) {
-      alert("Please fill in all fields");
+      displayError("Please fill in all fields");
       return;
     }
+
+    if (!validateEmail(loginData.email)) {
+      displayError("Please enter a valid email address");
+      return;
+    }
+
+    const existingUsers = JSON.parse(localStorage.getItem('users')) || [];
+    const user = existingUsers.find(u => u.email === loginData.email);
     
-    const userData = { 
-      role: "streamer", 
-      name: loginData.email.split('@')[0],
-      email: loginData.email 
-    };
-    
-    login(userData);
+    if (!user) {
+      displayError("No account found with this email. Would you like to sign up?");
+      setTimeout(() => setMode("choose"), 2500);
+      return;
+    }
+
+    if (user.password !== loginData.password) {
+      displayError("Incorrect password. Please try again.");
+      return;
+    }
+
+    login(user);
     onLoginSuccess();
     onClose();
   };
@@ -164,6 +296,21 @@ const AuthModal = ({ onClose, onLoginSuccess }) => {
         >
           <FaTimes size={24} />
         </motion.button>
+
+        {/* ERROR MESSAGE */}
+        <AnimatePresence>
+          {showError && (
+            <motion.div
+              initial={{ opacity: 0, y: -10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -10 }}
+              className="mb-4 p-4 bg-red-50 border border-red-200 rounded-xl flex items-start gap-3"
+            >
+              <FaExclamationCircle className="text-red-600 mt-0.5 flex-shrink-0" size={20} />
+              <p className="text-red-800 text-sm font-medium">{error}</p>
+            </motion.div>
+          )}
+        </AnimatePresence>
 
         {/* TITLE */}
         <motion.h2 
@@ -229,7 +376,6 @@ const AuthModal = ({ onClose, onLoginSuccess }) => {
               exit="exit"
               className="flex flex-col gap-5"
             >
-              {/* BACK BUTTON */}
               <motion.button
                 whileHover={{ x: -5 }}
                 onClick={() => setMode("choose")}
@@ -238,7 +384,6 @@ const AuthModal = ({ onClose, onLoginSuccess }) => {
                 <FaArrowLeft /> Back
               </motion.button>
 
-              {/* STREAMER FORM */}
               <div className="relative">
                 <FaUser className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" />
                 <input
@@ -288,14 +433,12 @@ const AuthModal = ({ onClose, onLoginSuccess }) => {
                 Create Streamer Account
               </motion.button>
 
-              {/* DIVIDER */}
               <div className="relative flex items-center my-2">
                 <div className="flex-grow border-t border-gray-300"></div>
                 <span className="flex-shrink mx-4 text-gray-500 text-sm">Or continue with</span>
                 <div className="flex-grow border-t border-gray-300"></div>
               </div>
 
-              {/* SOCIAL LOGIN */}
               <motion.button
                 whileHover={{ scale: 1.02 }}
                 whileTap={{ scale: 0.98 }}
@@ -318,7 +461,7 @@ const AuthModal = ({ onClose, onLoginSuccess }) => {
             </motion.div>
           )}
 
-          {/* BLOGGER STEP 1 */}
+          {/* BLOGGER STEP 1 - Multi-Select Niches */}
           {mode === "bloggerStep1" && (
             <motion.div
               key="bloggerStep1"
@@ -349,32 +492,55 @@ const AuthModal = ({ onClose, onLoginSuccess }) => {
                 />
               </div>
 
-              <div className="relative">
-                <FaHashtag className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" />
-                <select
-                  className="w-full border border-gray-300 rounded-xl pl-12 pr-4 py-3 focus:outline-none focus:ring-2 focus:ring-green-500 transition-all appearance-none bg-white"
-                  value={bloggerData.niche}
-                  onChange={(e) =>
-                    setBloggerData({ ...bloggerData, niche: e.target.value })
-                  }
-                >
-                  <option value="">Choose Your Niche</option>
-                  <option value="Technology">Technology</option>
-                  <option value="Fashion">Fashion</option>
-                  <option value="Food">Food</option>
-                  <option value="Travel">Travel</option>
-                  <option value="Lifestyle">Lifestyle</option>
-                  <option value="Health">Health</option>
-                  <option value="Business">Business</option>
-                  <option value="Other">Other</option>
-                </select>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-3">
+                  <FaHashtag className="inline mr-2" />
+                  Select Your Niches (Choose up to 3)
+                </label>
+                
+                {/* Selected Count */}
+                <div className="mb-3 text-sm text-gray-600">
+                  Selected: <span className="font-semibold text-green-700">{bloggerData.niches.length}/3</span>
+                </div>
+
+                {/* Niche Grid */}
+                <div className="grid grid-cols-2 gap-3 max-h-64 overflow-y-auto pr-2">
+                  {availableNiches.map((niche) => {
+                    const isSelected = bloggerData.niches.includes(niche);
+                    return (
+                      <motion.button
+                        key={niche}
+                        type="button"
+                        whileHover={{ scale: 1.05 }}
+                        whileTap={{ scale: 0.95 }}
+                        onClick={() => toggleNiche(niche)}
+                        className={`relative p-3 rounded-xl border-2 font-medium text-sm transition-all ${
+                          isSelected
+                            ? 'border-green-600 bg-green-50 text-green-700'
+                            : 'border-gray-300 bg-white text-gray-700 hover:border-green-400'
+                        }`}
+                      >
+                        {niche}
+                        {isSelected && (
+                          <motion.div
+                            initial={{ scale: 0 }}
+                            animate={{ scale: 1 }}
+                            className="absolute -top-2 -right-2 w-6 h-6 bg-green-600 rounded-full flex items-center justify-center"
+                          >
+                            <FaCheck className="text-white" size={12} />
+                          </motion.div>
+                        )}
+                      </motion.button>
+                    );
+                  })}
+                </div>
               </div>
 
               <motion.button
                 whileHover={{ scale: 1.02 }}
                 whileTap={{ scale: 0.98 }}
                 onClick={() => setMode("bloggerStep2")}
-                disabled={!bloggerData.username || !bloggerData.niche}
+                disabled={!bloggerData.username || bloggerData.niches.length === 0}
                 className="w-full py-3 bg-green-600 text-white font-semibold rounded-xl hover:bg-green-700 transition-all duration-200 disabled:bg-gray-400 disabled:cursor-not-allowed shadow-lg"
               >
                 Next

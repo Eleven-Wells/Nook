@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
@@ -11,23 +11,24 @@ import {
   FaPlus,
   FaEye,
   FaHeart,
-  FaComment
+  FaComment,
+  FaCamera
 } from 'react-icons/fa';
 import { MdArticle } from 'react-icons/md';
 
 const BloggerDashboard = () => {
-  const { user, isBlogger, logout } = useAuth();
+  const { user, isBlogger, logout, updateProfile } = useAuth();
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState('overview');
+  const fileInputRef = useRef(null);
+  const [uploading, setUploading] = useState(false);
 
-  // Redirect if not a blogger
   React.useEffect(() => {
     if (!isBlogger) {
       navigate('/profile');
     }
   }, [isBlogger, navigate]);
 
-  // Mock data for posts
   const posts = [
     { id: 1, title: 'Getting Started with React', views: 1234, likes: 89, comments: 23, status: 'published' },
     { id: 2, title: '10 Tips for Better Code', views: 2341, likes: 156, comments: 45, status: 'published' },
@@ -49,6 +50,40 @@ const BloggerDashboard = () => {
     { id: 'settings', label: 'Settings', icon: FaCog },
   ];
 
+  const handleImageUpload = (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    if (!file.type.startsWith('image/')) {
+      alert('Please upload an image file');
+      return;
+    }
+
+    if (file.size > 5 * 1024 * 1024) {
+      alert('Image size should be less than 5MB');
+      return;
+    }
+
+    setUploading(true);
+    const reader = new FileReader();
+    
+    reader.onloadend = () => {
+      updateProfile({ profileImage: reader.result });
+      setUploading(false);
+    };
+
+    reader.onerror = () => {
+      alert('Failed to upload image');
+      setUploading(false);
+    };
+
+    reader.readAsDataURL(file);
+  };
+
+  const triggerFileInput = () => {
+    fileInputRef.current?.click();
+  };
+
   return (
     <div className="min-h-screen bg-gray-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
@@ -61,12 +96,58 @@ const BloggerDashboard = () => {
         >
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">
-              <div className="w-16 h-16 rounded-full bg-gradient-to-br from-green-400 to-green-600 flex items-center justify-center text-white text-2xl font-bold">
-                <FaPen size={24} />
+              {/* Profile Image with Upload */}
+              <div className="relative">
+                <div className="w-16 h-16 rounded-full bg-gradient-to-br from-green-400 to-green-600 flex items-center justify-center text-white text-2xl font-bold overflow-hidden">
+                  {user?.profileImage ? (
+                    <img 
+                      src={user.profileImage} 
+                      alt={user.username} 
+                      className="w-full h-full object-cover"
+                    />
+                  ) : (
+                    <FaPen size={24} />
+                  )}
+                </div>
+                <motion.button
+                  whileHover={{ scale: 1.1 }}
+                  whileTap={{ scale: 0.9 }}
+                  onClick={triggerFileInput}
+                  disabled={uploading}
+                  className="absolute -bottom-1 -right-1 w-8 h-8 bg-green-600 text-white rounded-full flex items-center justify-center shadow-lg hover:bg-green-700 transition-all disabled:bg-gray-400"
+                >
+                  {uploading ? (
+                    <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                  ) : (
+                    <FaCamera size={14} />
+                  )}
+                </motion.button>
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  accept="image/*"
+                  onChange={handleImageUpload}
+                  className="hidden"
+                />
               </div>
+              
               <div>
                 <h1 className="text-2xl font-bold text-gray-900">Welcome back, {user?.username}!</h1>
-                <p className="text-gray-600">{user?.niche} Blogger</p>
+                {/* Multiple Niches Display */}
+                <div className="flex flex-wrap gap-2 mt-1">
+                  {user?.niches && user.niches.length > 0 ? (
+                    user.niches.map((niche, index) => (
+                      <span 
+                        key={index}
+                        className="px-2 py-1 bg-green-100 text-green-700 text-xs font-semibold rounded-full"
+                      >
+                        {niche}
+                      </span>
+                    ))
+                  ) : (
+                    <span className="text-gray-600 text-sm">Blogger</span>
+                  )}
+                </div>
               </div>
             </div>
             <motion.button
