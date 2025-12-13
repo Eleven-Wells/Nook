@@ -1,167 +1,277 @@
 import { useState, useEffect } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { useAuth } from '../../context/AuthContext';
+import { useNavigate, useLocation } from 'react-router-dom';
+import { motion } from 'framer-motion';
+import { FiLogOut } from 'react-icons/fi';
+import { FaUser, FaPen } from 'react-icons/fa';
 
-export default function Navigation() {
+export default function Navigation({ openAuthModal }) {
+    const { user, isLoggedIn, isBlogger, logout } = useAuth();
+    const navigate = useNavigate();
+    const location = useLocation();
     const [isOpen, setIsOpen] = useState(false);
     const [activeSection, setActiveSection] = useState('home');
-    const [hasScroll, setHasScroll] = useState(false);
+    const [scrolled, setScrolled] = useState(false);
 
-    const sections = ['home', 'discover', 'featured', 'latest'];
+    const navItems = [
+        { id: 'home', label: 'Home' },
+        { id: 'discover', label: 'Discover' },
+        { id: 'featured', label: 'Featured' },
+        { id: 'latest', label: 'Latest' }
+    ];
 
-    // Track active section on scroll
     useEffect(() => {
         const handleScroll = () => {
-            // Add shadow on scroll
-            setHasScroll(window.scrollY > 0);
+            setScrolled(window.scrollY > 20);
 
-            // Detect active section
-            let current = 'home';
-            for (const section of sections) {
-                const el = document.querySelector(`#${section}`);
-                if (el && el.getBoundingClientRect().top <= 100) {
-                    current = section;
+            const sections = navItems.map(item => item.id);
+            for (const sectionId of sections) {
+                const element = document.getElementById(sectionId);
+                if (element) {
+                    const rect = element.getBoundingClientRect();
+                    if (rect.top <= 100 && rect.bottom >= 100) {
+                        setActiveSection(sectionId);
+                        break;
+                    }
                 }
             }
-            setActiveSection(current);
         };
 
         window.addEventListener('scroll', handleScroll);
         return () => window.removeEventListener('scroll', handleScroll);
     }, []);
 
-    const handleMobileLinkClick = (target) => {
+    const scrollToSection = (sectionId) => {
+        // If not on home page, navigate to home first
+        if (location.pathname !== '/') {
+            navigate('/');
+            setTimeout(() => {
+                const element = document.getElementById(sectionId);
+                if (element) {
+                    element.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                }
+            }, 100);
+        } else {
+            const element = document.getElementById(sectionId);
+            if (element) {
+                element.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }
+        }
         setIsOpen(false);
-        setTimeout(() => {
-            document.querySelector(target)?.scrollIntoView({ behavior: "smooth" });
-        }, 150);
     };
 
-    const isLinkActive = (section) => activeSection === section;
+    const handleUserClick = () => {
+        if (isBlogger) {
+            navigate('/dashboard');
+        } else {
+            navigate('/profile');
+        }
+        setIsOpen(false);
+    };
+
+    const handleLogout = () => {
+        if (window.confirm('Are you sure you want to logout?')) {
+            logout();
+            setIsOpen(false);
+            navigate('/');
+        }
+    };
 
     return (
         <>
-            <nav className={`fixed top-0 left-0 right-0 bg-gray-50 border-b border-gray-200 z-50 transition-shadow duration-300 ${
-                hasScroll ? 'shadow-md' : ''
-            }`}>
+            <motion.nav
+                initial={{ y: -100 }}
+                animate={{ y: 0 }}
+                transition={{ type: "spring", stiffness: 100 }}
+                className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
+                    scrolled 
+                        ? 'bg-white/95 backdrop-blur-md shadow-lg' 
+                        : 'bg-gray-50 border-b border-gray-200'
+                }`}
+            >
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                    <div className="flex justify-between items-center h-16">
-
+                    <div className="flex items-center justify-between h-16">
+                        
                         {/* Logo */}
-                        <div className="shrink-0">
-                            <span className="text-xl font-bold text-green-800">LUMEBLOG.</span>
-                        </div>
+                        <motion.div 
+                            whileHover={{ scale: 1.05 }}
+                            className="shrink-0 cursor-pointer"
+                            onClick={() => navigate('/')}
+                        >
+                            <span className="text-xl font-bold text-green-800">LUMEBLOG</span>
+                        </motion.div>
 
-                        {/* Desktop Links */}
-                        <div className="hidden md:flex space-x-8">
-                            {sections.map((section) => (
-                                <a
-                                    key={section}
-                                    href={`#${section}`}
-                                    className={`px-3 py-2 text-sm font-medium transition-colors duration-300 ${
-                                        isLinkActive(section)
-                                            ? 'text-green-800 font-semibold'
-                                            : 'text-gray-700 hover:text-gray-900'
+                        {/* Desktop Navigation */}
+                        <div className="hidden md:flex items-center space-x-1">
+                            {navItems.map((item) => (
+                                <motion.button
+                                    key={item.id}
+                                    onClick={() => scrollToSection(item.id)}
+                                    whileHover={{ scale: 1.05 }}
+                                    whileTap={{ scale: 0.95 }}
+                                    className={`relative px-4 py-2 text-sm font-medium transition-all rounded-lg ${
+                                        activeSection === item.id
+                                            ? 'text-green-800 bg-green-50'
+                                            : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100'
                                     }`}
                                 >
-                                    {section.charAt(0).toUpperCase() + section.slice(1)}
-                                    {isLinkActive(section) && (
-                                        <motion.div
-                                            layoutId="underline"
-                                            className="h-0.5 bg-green-800 mt-1"
-                                            initial={false}
-                                        />
-                                    )}
-                                </a>
+                                    {item.label}
+                                </motion.button>
                             ))}
                         </div>
 
-                        {/* Subscribe Button (Desktop) */}
-                        <div className="hidden md:block shrink-0">
-                            <button className="bg-green-800 hover:bg-green-900 text-white px-6 py-2 rounded-full text-sm font-medium transition-colors">
-                                Subscribe
-                            </button>
+                        {/* Desktop Auth Area */}
+                        <div className="hidden md:flex items-center gap-3">
+                            {isLoggedIn ? (
+                                <>
+                                    <motion.div 
+                                        initial={{ opacity: 0, x: 20 }}
+                                        animate={{ opacity: 1, x: 0 }}
+                                        onClick={handleUserClick}
+                                        whileHover={{ scale: 1.05 }}
+                                        className="flex items-center gap-2 px-3 py-1.5 bg-gray-100 rounded-full cursor-pointer hover:bg-gray-200 transition-all"
+                                    >
+                                        <div className="w-8 h-8 rounded-full bg-green-800 text-white flex items-center justify-center text-sm font-bold">
+                                            {isBlogger ? <FaPen size={14} /> : <FaUser size={14} />}
+                                        </div>
+                                        <div className="flex flex-col">
+                                            <span className="text-sm font-medium text-gray-900">
+                                                {user?.username || user?.name || user?.email}
+                                            </span>
+                                            {isBlogger && (
+                                                <span className="text-xs text-green-700 font-semibold">
+                                                    {user?.niche}
+                                                </span>
+                                            )}
+                                        </div>
+                                    </motion.div>
+
+                                    <motion.button
+                                        whileHover={{ scale: 1.05 }}
+                                        whileTap={{ scale: 0.95 }}
+                                        onClick={handleLogout}
+                                        className="px-4 py-2 bg-red-600 text-white rounded-full text-sm font-medium hover:bg-red-700 transition-all flex items-center gap-2"
+                                    >
+                                        <FiLogOut size={16} />
+                                        Logout
+                                    </motion.button>
+                                </>
+                            ) : (
+                                <motion.button
+                                    whileHover={{ scale: 1.05 }}
+                                    whileTap={{ scale: 0.95 }}
+                                    onClick={openAuthModal}
+                                    className="px-6 py-2 bg-green-800 text-white rounded-full text-sm font-medium hover:bg-green-900 transition-all shadow-md hover:shadow-lg"
+                                >
+                                    Login
+                                </motion.button>
+                            )}
                         </div>
 
-                        {/* Hamburger */}
-                        <button
+                        {/* Mobile Menu Button */}
+                        <motion.button
+                            whileTap={{ scale: 0.9 }}
                             onClick={() => setIsOpen(!isOpen)}
-                            className="md:hidden relative w-10 h-10 flex flex-col items-center justify-center space-y-1.5"
-                            aria-label="Toggle menu"
+                            className="md:hidden relative w-10 h-10 flex items-center justify-center"
                         >
-                            <motion.span
-                                animate={{
-                                    rotate: isOpen ? 45 : 0,
-                                    y: isOpen ? 8 : 0,
-                                }}
-                                transition={{ duration: 0.3 }}
-                                className="w-6 h-0.5 bg-gray-900 block"
-                            />
-
-                            <motion.span
-                                animate={{ opacity: isOpen ? 0 : 1 }}
-                                transition={{ duration: 0.2 }}
-                                className="w-6 h-0.5 bg-gray-900 block"
-                            />
-
-                            <motion.span
-                                animate={{
-                                    rotate: isOpen ? -45 : 0,
-                                    y: isOpen ? -8 : 0,
-                                }}
-                                transition={{ duration: 0.3 }}
-                                className="w-6 h-0.5 bg-gray-900 block"
-                            />
-                        </button>
+                            <div className="flex flex-col space-y-1.5">
+                                <motion.span 
+                                    animate={{
+                                        rotate: isOpen ? 45 : 0,
+                                        y: isOpen ? 8 : 0,
+                                    }}
+                                    className="w-6 h-0.5 bg-gray-900 block"
+                                />
+                                <motion.span 
+                                    animate={{ opacity: isOpen ? 0 : 1 }}
+                                    className="w-6 h-0.5 bg-gray-900 block"
+                                />
+                                <motion.span 
+                                    animate={{
+                                        rotate: isOpen ? -45 : 0,
+                                        y: isOpen ? -8 : 0,
+                                    }}
+                                    className="w-6 h-0.5 bg-gray-900 block"
+                                />
+                            </div>
+                        </motion.button>
                     </div>
                 </div>
 
                 {/* Mobile Menu */}
-                <AnimatePresence>
-                    {isOpen && (
-                        <motion.div
-                            initial={{ opacity: 0, height: 0 }}
-                            animate={{ opacity: 1, height: "auto" }}
-                            exit={{ opacity: 0, height: 0 }}
-                            transition={{ duration: 0.3 }}
-                            className="md:hidden overflow-hidden bg-white border-t border-gray-200"
-                        >
-                            <div className="px-4 pt-2 pb-4 space-y-1">
-
-                                {/* Mobile Links */}
-                                {sections.map((section) => (
-                                    <motion.a
-                                        key={section}
-                                        onClick={() => handleMobileLinkClick(`#${section}`)}
-                                        initial={{ x: -20, opacity: 0 }}
-                                        animate={{ x: 0, opacity: 1 }}
-                                        href={`#${section}`}
-                                        className={`block px-3 py-3 rounded-lg text-base font-medium transition-colors duration-300 ${
-                                            isLinkActive(section)
-                                                ? 'bg-green-100 text-green-800 font-semibold'
-                                                : 'text-gray-700 hover:bg-gray-100'
-                                        }`}
-                                    >
-                                        {section.charAt(0).toUpperCase() + section.slice(1)}
-                                    </motion.a>
-                                ))}
-
-                                {/* Subscribe Button */}
-                                <motion.div
-                                    initial={{ x: -20, opacity: 0 }}
-                                    animate={{ x: 0, opacity: 1 }}
-                                    className="pt-2"
+                {isOpen && (
+                    <motion.div
+                        initial={{ opacity: 0, height: 0 }}
+                        animate={{ opacity: 1, height: 'auto' }}
+                        exit={{ opacity: 0, height: 0 }}
+                        className="md:hidden border-t border-gray-200 bg-white"
+                    >
+                        <div className="px-4 py-4 space-y-2">
+                            {navItems.map((item, index) => (
+                                <motion.button
+                                    key={item.id}
+                                    initial={{ opacity: 0, x: -20 }}
+                                    animate={{ opacity: 1, x: 0 }}
+                                    transition={{ delay: index * 0.1 }}
+                                    onClick={() => scrollToSection(item.id)}
+                                    className={`w-full text-left px-4 py-3 rounded-lg font-medium transition-colors ${
+                                        activeSection === item.id
+                                            ? 'bg-green-100 text-green-800'
+                                            : 'text-gray-700 hover:bg-gray-100'
+                                    }`}
                                 >
-                                    <button className="w-full bg-green-800 hover:bg-green-900 text-white px-6 py-3 rounded-full text-base font-medium">
-                                        Subscribe
-                                    </button>
-                                </motion.div>
-                            </div>
-                        </motion.div>
-                    )}
-                </AnimatePresence>
-            </nav>
+                                    {item.label}
+                                </motion.button>
+                            ))}
 
-            {/* Spacer to push content below fixed nav */}
+                            <div className="pt-2 border-t border-gray-200 space-y-2">
+                                {isLoggedIn ? (
+                                    <>
+                                        <motion.div 
+                                            initial={{ opacity: 0 }}
+                                            animate={{ opacity: 1 }}
+                                            onClick={handleUserClick}
+                                            className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg cursor-pointer hover:bg-gray-100 transition-all"
+                                        >
+                                            <div className="w-12 h-12 rounded-full bg-green-800 text-white flex items-center justify-center text-lg font-bold">
+                                                {isBlogger ? <FaPen size={18} /> : <FaUser size={18} />}
+                                            </div>
+                                            <div className="flex-1">
+                                                <p className="font-medium text-gray-900">
+                                                    {user?.username || user?.name || user?.email}
+                                                </p>
+                                                {isBlogger && (
+                                                    <span className="inline-block mt-1 text-xs font-semibold text-green-700 bg-green-100 px-2 py-0.5 rounded-full">
+                                                        {user?.niche}
+                                                    </span>
+                                                )}
+                                            </div>
+                                        </motion.div>
+
+                                        <motion.button
+                                            whileTap={{ scale: 0.95 }}
+                                            onClick={handleLogout}
+                                            className="w-full px-4 py-3 bg-red-600 text-white rounded-lg font-medium hover:bg-red-700 transition-colors flex items-center justify-center gap-2"
+                                        >
+                                            <FiLogOut size={18} />
+                                            Logout
+                                        </motion.button>
+                                    </>
+                                ) : (
+                                    <motion.button
+                                        whileTap={{ scale: 0.95 }}
+                                        onClick={openAuthModal}
+                                        className="w-full px-4 py-3 bg-green-800 text-white rounded-lg font-medium hover:bg-green-900 transition-colors"
+                                    >
+                                        Login
+                                    </motion.button>
+                                )}
+                            </div>
+                        </div>
+                    </motion.div>
+                )}
+            </motion.nav>
+
             <div className="h-16" />
         </>
     );

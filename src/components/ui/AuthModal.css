@@ -1,0 +1,14 @@
+.error-message {
+    background: #f8d7da;
+    color: #721c24;
+    padding: 12px;
+    border-radius: 6px;
+    margin-bottom: 20px;
+    border: 1px solid #f5c6cb;
+    font-size: 14px;
+  }
+  
+  .social-icon {
+    font-weight: bold;
+    font-size: 18px;
+  }
