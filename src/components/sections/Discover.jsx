@@ -2,6 +2,7 @@ import React from "react";
 import { FiChevronRight, FiCompass, FiBook, FiUsers, FiShare2, FiBookOpen, FiAward, FiCoffee, FiTrendingUp, FiLayers } from "react-icons/fi";
 import { FaFire } from "react-icons/fa";
 import { motion } from "framer-motion";
+import { useAuth } from "../../context/AuthContext";
 
 const categories = [
   { title: "Popular", description: "Top picks and fan favorites of the week", icon: <FaFire size={22} /> },
@@ -30,6 +31,8 @@ const staggerContainer = {
 };
 
 const Discover = () => {
+  const { isLoggedIn } = useAuth();
+
   return (
     <div>
       {/* Inspire Section */}
@@ -42,7 +45,7 @@ const Discover = () => {
             whileInView="visible"
             viewport={{ once: true }}
           >
-            Find What Inspires You
+            {isLoggedIn ? "Browse by Category" : "Find What Inspires You"}
           </motion.h2>
 
           <motion.p
@@ -52,11 +55,13 @@ const Discover = () => {
             whileInView="visible"
             viewport={{ once: true }}
           >
-            Discover insightful articles across design, technology, lifestyle,
-            and productivity. Join our community of curious minds.
+            {isLoggedIn 
+              ? "Filter articles by your interests and discover content that matters to you."
+              : "Discover insightful articles across design, technology, lifestyle, and productivity. Join our community of curious minds."
+            }
           </motion.p>
 
-          {/* Category Grid */}
+          {/* Category Grid - Always Visible (Acts as Filter) */}
           <motion.div
             className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-10"
             variants={staggerContainer}
@@ -67,8 +72,10 @@ const Discover = () => {
             {categories.map((item, index) => (
               <motion.div
                 key={index}
-                className="bg-white border border-gray-200 rounded-xl p-6 hover:border-green-500 hover:shadow-xl shadow-lg transition-all duration-300 group"
+                className="bg-white border border-gray-200 rounded-xl p-6 hover:border-green-500 hover:shadow-xl shadow-lg transition-all duration-300 group cursor-pointer"
                 variants={fadeUp}
+                whileHover={{ scale: 1.03 }}
+                whileTap={{ scale: 0.98 }}
               >
                 <div className="flex items-start justify-between mb-4">
                   <div className="text-green-700">{item.icon}</div>
@@ -81,29 +88,36 @@ const Discover = () => {
           </motion.div>
         </div>
 
-        {/* How it works Section */}
-        <section className="w-full py-16 px-6 bg-slate-50 mt-15">
-          <div className="max-w-6xl mx-auto">
-            <motion.div className="text-center mb-16" variants={staggerContainer} initial="hidden" whileInView="visible" viewport={{ once: true }}>
-              <motion.h2 className="text-4xl md:text-5xl font-semibold text-slate-800 mb-4" variants={fadeUp}>
-                How it works
-              </motion.h2>
-              <motion.p className="text-lg text-slate-600 max-w-2xl mx-auto" variants={fadeUp}>
-                Discover how our blog makes it easy for you to explore, learn, and share ideas that matter
-              </motion.p>
-            </motion.div>
+        {/* How it works Section - Only show when NOT logged in */}
+        {!isLoggedIn && (
+          <motion.section 
+            className="w-full py-16 px-6 bg-slate-50 mt-15"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+          >
+            <div className="max-w-6xl mx-auto">
+              <motion.div className="text-center mb-16" variants={staggerContainer} initial="hidden" whileInView="visible" viewport={{ once: true }}>
+                <motion.h2 className="text-4xl md:text-5xl font-semibold text-slate-800 mb-4" variants={fadeUp}>
+                  How it works
+                </motion.h2>
+                <motion.p className="text-lg text-slate-600 max-w-2xl mx-auto" variants={fadeUp}>
+                  Discover how our blog makes it easy for you to explore, learn, and share ideas that matter
+                </motion.p>
+              </motion.div>
 
-            <motion.div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-15" variants={staggerContainer} initial="hidden" whileInView="visible" viewport={{ once: true }}>
-              {steps.map((step, index) => (
-                <motion.div key={index} className="flex flex-col items-center text-center" variants={fadeUp}>
-                  <div className="text-green-700 mb-6 p-4 rounded-full bg-slate-100 hover:bg-slate-200 transition-colors">{step.icon}</div>
-                  <h3 className="text-xl font-semibold text-green-800 mb-3">{step.title}</h3>
-                  <p className="text-slate-500 text-sm leading-relaxed font-semibold">{step.description}</p>
-                </motion.div>
-              ))}
-            </motion.div>
-          </div>
-        </section>
+              <motion.div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-15" variants={staggerContainer} initial="hidden" whileInView="visible" viewport={{ once: true }}>
+                {steps.map((step, index) => (
+                  <motion.div key={index} className="flex flex-col items-center text-center" variants={fadeUp}>
+                    <div className="text-green-700 mb-6 p-4 rounded-full bg-slate-100 hover:bg-slate-200 transition-colors">{step.icon}</div>
+                    <h3 className="text-xl font-semibold text-green-800 mb-3">{step.title}</h3>
+                    <p className="text-slate-500 text-sm leading-relaxed font-semibold">{step.description}</p>
+                  </motion.div>
+                ))}
+              </motion.div>
+            </div>
+          </motion.section>
+        )}
       </section>
     </div>
   );

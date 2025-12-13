@@ -1,18 +1,21 @@
-import React from 'react'
-import Navigation from './components/ui/Navigation.jsx'
-import Footer from './components/ui/Footer.jsx'
+import React, { useState } from 'react';
+import { Routes, Route } from 'react-router-dom'; // ✅ Just Routes, not BrowserRouter
+import { AuthProvider } from './context/AuthContext';
 
-import FeaturedPosts from './components/sections/FeaturedPosts.jsx'
-import LatestPost from './components/sections/LatestPost.jsx'
-import Home from './components/sections/Home.jsx'
-import Contact from './components/sections/Contact.jsx'
-import Discover from './components/sections/Discover.jsx'
+import Navigation from './components/ui/Navigation.jsx';
+import Footer from './components/ui/Footer.jsx';
+import FeaturedPosts from './components/sections/FeaturedPosts.jsx';
+import LatestPost from './components/sections/LatestPost.jsx';
+import Home from './components/sections/Home.jsx';
+import Contact from './components/sections/Contact.jsx';
+import Discover from './components/sections/Discover.jsx';
+import AuthModal from './components/ui/AuthModal.jsx';
+import BloggerDashboard from './components/dashboard/BloggerDashboard.jsx';
+import StreamerProfile from './components/dashboard/StreamerProfile.jsx';
 
-const App = () => {
+const HomePage = () => {
   return (
-    <div>
-      <Navigation />
-
+    <>
       <section id="home">
         <Home />
       </section>
@@ -32,10 +35,39 @@ const App = () => {
       <section id="contact">
         <Contact />
       </section>
+    </>
+  );
+};
 
-      <Footer />
-    </div>
-  )
-}
+const App = () => {
+  const [showAuthModal, setShowAuthModal] = useState(false);
 
-export default App
+  const handleLoginSuccess = () => {
+    setShowAuthModal(false);
+  };
+
+  return (
+    <AuthProvider>
+      <div>
+        <Navigation openAuthModal={() => setShowAuthModal(true)} />
+        
+        {showAuthModal && (
+          <AuthModal 
+            onClose={() => setShowAuthModal(false)}
+            onLoginSuccess={handleLoginSuccess}
+          />
+        )}
+
+        <Routes>
+          <Route path="/" element={<HomePage />} />
+          <Route path="/dashboard" element={<BloggerDashboard />} />
+          <Route path="/profile" element={<StreamerProfile />} />
+        </Routes>
+
+        <Footer />
+      </div>
+    </AuthProvider>
+  );
+};
+
+export default App;
