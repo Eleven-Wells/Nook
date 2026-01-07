@@ -98,7 +98,7 @@ const LatestPost = () =>  {
     }, []);
 
     return (
-        <section className="py-16 px-4 bg-gray-50">
+        <section className="py-16 px-4 bg-gray-50 dark:bg-gray-900">
             <div className="max-w-7xl mx-auto">
                 {/* Header */}
                 <motion.div 
@@ -107,8 +107,8 @@ const LatestPost = () =>  {
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.6 }}
                 >
-                    <h2 className="text-4xl font-bold text-gray-900 mb-3">Latest Posts</h2>
-                    <p className="text-gray-600 max-w-2xl mx-auto">
+                    <h2 className="text-4xl font-bold dark:text-gray-100 text-gray-900 mb-3">Latest Posts</h2>
+                    <p className="text-gray-600 dark:text-slate-300 max-w-2xl mx-auto">
                         Discover our newest stories packed with fresh ideas, insights, and inspiration for curious minds
                     </p>
                 </motion.div>

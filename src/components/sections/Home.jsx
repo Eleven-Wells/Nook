@@ -90,7 +90,7 @@ const Home = () => {
       exit="exit"
     >
       <motion.h1
-        className="text-3xl md:text-5xl font-semibold leading-tight whitespace-nowrap max-w-xs sm:max-w-none"
+        className="text-3xl md:text-5xl font-semibold leading-tight whitespace-nowrap max-w-xs sm:max-w-none dark:text-gray-100"
         variants={fadeUp}
       >
         Get the latest gists, blogs
@@ -99,7 +99,7 @@ const Home = () => {
       </motion.h1>
 
       <motion.p
-        className="mt-4 text-gray-600 max-w-xl"
+        className="mt-4 text-gray-600 dark:text-gray-100 max-w-xl"
         variants={fadeUp}
       >
         A vibrant place where you'll find the latest gist, hot trends,
@@ -216,7 +216,7 @@ const Home = () => {
   );
 
   return (
-    <section className="bg-[#f7fcff] w-full py-16 px-6 min-h-[600px] flex items-center">
+    <section className="bg-[#f7fcff] dark:bg-gray-900 w-full py-16 px-6 min-h-[600px] flex items-center">
       <AnimatePresence mode="wait">
         {!isLoggedIn || showOriginal ? (
           <OriginalContent key="original" />

@@ -28,7 +28,7 @@ export default function Footer() {
     ];
 
     return (
-        <footer className="bg-gradient-to-br from-green-700 to-green-800 text-white">
+        <footer className="bg-linear-to-br from-green-700 to-green-800 text-white dark:text-gray-900">
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
                 
                 {/* Main Footer Content */}

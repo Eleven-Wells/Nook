@@ -22,7 +22,7 @@ const StayInLoop = () => {
   };
 
   return (
-    <section className="w-full py-20 px-6 bg-gradient-to-b from-slate-100 to-slate-50">
+    <section className="w-full py-20 px-6 dark:bg-gray-800 bg-slate-100">
       <motion.div
         className="max-w-2xl mx-auto text-center"
         variants={staggerContainer}
@@ -39,7 +39,7 @@ const StayInLoop = () => {
 
         {/* Heading */}
         <motion.h2
-          className="text-4xl md:text-5xl font-bold text-slate-900 mb-6"
+          className="text-4xl md:text-5xl font-bold dark:text-gray-100 text-slate-900 mb-6"
           variants={fadeUp}
         >
           Stay in the loop
@@ -47,7 +47,7 @@ const StayInLoop = () => {
 
         {/* Description */}
         <motion.p
-          className="text-lg text-slate-600 mb-10 leading-relaxed"
+          className="text-lg dark:text-slate-400 text-slate-600 mb-10 leading-relaxed"
           variants={fadeUp}
         >
           Get weekly updates, exclusive insights, and fresh content delivered
@@ -59,9 +59,9 @@ const StayInLoop = () => {
           className="flex flex-col sm:flex-row gap-3 mb-4"
           variants={fadeUp}
         >
-          <div className="flex-1 relative">
+          <div className="flex-1 relative dark:bg-white/10">
             <FiMail
-              className="absolute left-4 top-1/2 transform -translate-y-1/2 text-slate-400"
+              className=" absolute left-4 top-1/2 transform -translate-y-1/2 text-slate-400"
               size={20}
             />
             <input
@@ -70,7 +70,7 @@ const StayInLoop = () => {
               onChange={(e) => setEmail(e.target.value)}
               placeholder="Enter your email"
               required
-              className="w-full pl-12 pr-4 py-3 rounded-lg border border-slate-300 focus:outline-none focus:border-green-800 focus:ring-1 focus:ring-green-800 shadow-xl"
+              className="w-full dark:text-gray-100 pl-12 pr-4 py-3 rounded-lg border border-slate-300 focus:outline-none focus:border-green-800 focus:ring-1 focus:ring-green-800 shadow-xl"
             />
           </div>
           <motion.button
@@ -84,7 +84,7 @@ const StayInLoop = () => {
         </motion.div>
 
         {/* Disclaimer */}
-        <motion.p className="text-sm text-slate-500 mb-12" variants={fadeUp}>
+        <motion.p className="text-sm dark:text-slate-400 text-slate-500 mb-12" variants={fadeUp}>
           No spam, ever. Unsubscribe anytime.
         </motion.p>
 
@@ -110,7 +110,7 @@ const StayInLoop = () => {
               variants={fadeUp}
             />
           </div>
-          <motion.p className="text-slate-600 text-sm font-medium" variants={fadeUp}>
+          <motion.p className="text-slate-600 dark:text-slate-400 text-sm font-medium" variants={fadeUp}>
             Join 1,000+ subscribers
           </motion.p>
         </motion.div>

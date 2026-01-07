@@ -283,7 +283,7 @@ const AuthModal = ({ onClose, onLoginSuccess }) => {
         initial="hidden"
         animate="visible"
         exit="exit"
-        className="bg-white w-full max-w-lg rounded-2xl shadow-2xl p-8 relative max-h-[90vh] overflow-y-auto"
+        className="bg-white dark:bg-gray-950 w-full max-w-lg rounded-2xl shadow-2xl p-8 relative max-h-[90vh] overflow-y-auto"
         onClick={(e) => e.stopPropagation()}
       >
         
@@ -317,7 +317,7 @@ const AuthModal = ({ onClose, onLoginSuccess }) => {
           key={mode}
           initial={{ opacity: 0, y: -10 }}
           animate={{ opacity: 1, y: 0 }}
-          className="text-2xl font-bold text-center mb-6 text-gray-900"
+          className="text-2xl font-bold text-center mb-6 text-gray-900 dark:text-gray-100"
         >
           {mode === "choose" && "Join LUMEBLOG"}
           {mode === "streamer" && "Create Your Streamer Account"}
@@ -341,7 +341,7 @@ const AuthModal = ({ onClose, onLoginSuccess }) => {
                 whileHover={{ scale: 1.02 }}
                 whileTap={{ scale: 0.98 }}
                 onClick={() => setMode("streamer")}
-                className="w-full py-4 border-2 border-green-600 text-green-700 font-semibold rounded-xl hover:bg-green-50 transition-all duration-200 flex items-center justify-center gap-3"
+                className="w-full dark:bg-gray-900 py-4 border-2 hover:border-green-600 border-gray-700 text-green-700 font-semibold rounded-xl hover:bg-green-200 transition-all duration-200 flex items-center justify-center gap-3"
               >
                 <FaUser size={20} />
                 I am a Streamer
@@ -389,7 +389,7 @@ const AuthModal = ({ onClose, onLoginSuccess }) => {
                 <input
                   type="text"
                   placeholder="Full Name"
-                  className="w-full border border-gray-300 rounded-xl pl-12 pr-4 py-3 focus:outline-none focus:ring-2 focus:ring-green-500 transition-all"
+                  className="w-full border dark:text-gray-100 border-gray-300 rounded-xl pl-12 pr-4 py-3 focus:outline-none focus:ring-2 focus:ring-green-500 transition-all"
                   value={streamerData.name}
                   onChange={(e) =>
                     setStreamerData({ ...streamerData, name: e.target.value })
@@ -402,7 +402,7 @@ const AuthModal = ({ onClose, onLoginSuccess }) => {
                 <input
                   type="email"
                   placeholder="Email Address"
-                  className="w-full border border-gray-300 rounded-xl pl-12 pr-4 py-3 focus:outline-none focus:ring-2 focus:ring-green-500 transition-all"
+                  className="w-full border dark:text-gray-100 border-gray-300 rounded-xl pl-12 pr-4 py-3 focus:outline-none focus:ring-2 focus:ring-green-500 transition-all"
                   value={streamerData.email}
                   onChange={(e) =>
                     setStreamerData({ ...streamerData, email: e.target.value })
@@ -415,7 +415,7 @@ const AuthModal = ({ onClose, onLoginSuccess }) => {
                 <input
                   type="password"
                   placeholder="Password (min. 6 characters)"
-                  className="w-full border border-gray-300 rounded-xl pl-12 pr-4 py-3 focus:outline-none focus:ring-2 focus:ring-green-500 transition-all"
+                  className="w-full border dark:text-gray-100 border-gray-300 rounded-xl pl-12 pr-4 py-3 focus:outline-none focus:ring-2 focus:ring-green-500 transition-all"
                   value={streamerData.password}
                   onChange={(e) =>
                     setStreamerData({ ...streamerData, password: e.target.value })
@@ -442,7 +442,7 @@ const AuthModal = ({ onClose, onLoginSuccess }) => {
               <motion.button
                 whileHover={{ scale: 1.02 }}
                 whileTap={{ scale: 0.98 }}
-                className="w-full py-3 border border-gray-300 rounded-xl flex items-center justify-center gap-3 hover:bg-gray-50 transition-all duration-200 font-medium"
+                className="w-full py-3 border dark:text-gray-100 dark:hover:text-black border-gray-300 rounded-xl flex items-center justify-center gap-3 hover:bg-gray-50 transition-all duration-200 font-medium"
                 onClick={() => handleSocialLogin('Google')}
               >
                 <FaGoogle className="text-red-500" size={20} />
@@ -452,7 +452,7 @@ const AuthModal = ({ onClose, onLoginSuccess }) => {
               <motion.button
                 whileHover={{ scale: 1.02 }}
                 whileTap={{ scale: 0.98 }}
-                className="w-full py-3 border border-gray-300 rounded-xl flex items-center justify-center gap-3 hover:bg-gray-50 transition-all duration-200 font-medium"
+                className="w-full py-3 border dark:text-gray-100 dark:hover:text-black border-gray-300 rounded-xl flex items-center justify-center gap-3 hover:bg-gray-50 transition-all duration-200 font-medium"
                 onClick={() => handleSocialLogin('Facebook')}
               >
                 <FaFacebook className="text-blue-600" size={20} />
@@ -484,7 +484,7 @@ const AuthModal = ({ onClose, onLoginSuccess }) => {
                 <input
                   type="text"
                   placeholder="Choose a Username"
-                  className="w-full border border-gray-300 rounded-xl pl-12 pr-4 py-3 focus:outline-none focus:ring-2 focus:ring-green-500 transition-all"
+                  className="w-full border dark:text-gray-100 border-gray-300 rounded-xl pl-12 pr-4 py-3 focus:outline-none focus:ring-2 focus:ring-green-500 transition-all"
                   value={bloggerData.username}
                   onChange={(e) =>
                     setBloggerData({ ...bloggerData, username: e.target.value })
@@ -493,13 +493,13 @@ const AuthModal = ({ onClose, onLoginSuccess }) => {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-3">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-100 mb-3">
                   <FaHashtag className="inline mr-2" />
                   Select Your Niches (Choose up to 3)
                 </label>
                 
                 {/* Selected Count */}
-                <div className="mb-3 text-sm text-gray-600">
+                <div className="mb-3 text-sm text-gray-600 dark:text-gray-100">
                   Selected: <span className="font-semibold text-green-700">{bloggerData.niches.length}/3</span>
                 </div>
 
@@ -517,7 +517,7 @@ const AuthModal = ({ onClose, onLoginSuccess }) => {
                         className={`relative p-3 rounded-xl border-2 font-medium text-sm transition-all ${
                           isSelected
                             ? 'border-green-600 bg-green-50 text-green-700'
-                            : 'border-gray-300 bg-white text-gray-700 hover:border-green-400'
+                            : 'bg-white text-gray-700 hover:border-green-400'
                         }`}
                       >
                         {niche}
@@ -561,7 +561,7 @@ const AuthModal = ({ onClose, onLoginSuccess }) => {
               <motion.button
                 whileHover={{ x: -5 }}
                 onClick={() => setMode("bloggerStep1")}
-                className="text-sm text-gray-600 hover:text-green-600 transition-colors self-start mb-2 flex items-center gap-2"
+                className="text-sm text-gray-600 dark:text-gray-100 hover:text-green-600 transition-colors self-start mb-2 flex items-center gap-2"
               >
                 <FaArrowLeft /> Back
               </motion.button>
@@ -571,7 +571,7 @@ const AuthModal = ({ onClose, onLoginSuccess }) => {
                 <input
                   type="email"
                   placeholder="Email Address"
-                  className="w-full border border-gray-300 rounded-xl pl-12 pr-4 py-3 focus:outline-none focus:ring-2 focus:ring-green-500 transition-all"
+                  className="w-full border border-gray-300 dark:text-gray-100 rounded-xl pl-12 pr-4 py-3 focus:outline-none focus:ring-2 focus:ring-green-500 transition-all"
                   value={bloggerData.email}
                   onChange={(e) =>
                     setBloggerData({ ...bloggerData, email: e.target.value })
@@ -584,7 +584,7 @@ const AuthModal = ({ onClose, onLoginSuccess }) => {
                 <input
                   type="password"
                   placeholder="Password (min. 6 characters)"
-                  className="w-full border border-gray-300 rounded-xl pl-12 pr-4 py-3 focus:outline-none focus:ring-2 focus:ring-green-500 transition-all"
+                  className="w-full border border-gray-300 dark:text-gray-100 rounded-xl pl-12 pr-4 py-3 focus:outline-none focus:ring-2 focus:ring-green-500 transition-all"
                   value={bloggerData.password}
                   onChange={(e) =>
                     setBloggerData({ ...bloggerData, password: e.target.value })
@@ -640,7 +640,7 @@ const AuthModal = ({ onClose, onLoginSuccess }) => {
                 <input
                   type="email"
                   placeholder="Email"
-                  className="w-full border border-gray-300 rounded-xl pl-12 pr-4 py-3 focus:outline-none focus:ring-2 focus:ring-green-500 transition-all"
+                  className="w-full border dark:text-gray-100 border-gray-300 rounded-xl pl-12 pr-4 py-3 focus:outline-none focus:ring-2 focus:ring-green-500 transition-all"
                   value={loginData.email}
                   onChange={(e) => setLoginData({ ...loginData, email: e.target.value })}
                 />
@@ -651,7 +651,7 @@ const AuthModal = ({ onClose, onLoginSuccess }) => {
                 <input
                   type="password"
                   placeholder="Password"
-                  className="w-full border border-gray-300 rounded-xl pl-12 pr-4 py-3 focus:outline-none focus:ring-2 focus:ring-green-500 transition-all"
+                  className="w-full border dark:text-gray-100 border-gray-300 rounded-xl pl-12 pr-4 py-3 focus:outline-none focus:ring-2 focus:ring-green-500 transition-all"
                   value={loginData.password}
                   onChange={(e) => setLoginData({ ...loginData, password: e.target.value })}
                 />
