@@ -4,6 +4,7 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { FiLogOut } from 'react-icons/fi';
 import { FaUser, FaPen } from 'react-icons/fa';
+import { MdDarkMode, MdOutlineLightMode } from "react-icons/md";
 
 export default function Navigation({ openAuthModal }) {
     const { user, isLoggedIn, isBlogger, logout } = useAuth();
@@ -75,6 +76,28 @@ export default function Navigation({ openAuthModal }) {
             navigate('/');
         }
     };
+const [theme, setTheme] = useState(() => {
+  if (typeof window !== "undefined") {
+    return (
+      localStorage.getItem("theme") ||
+      (window.matchMedia("(prefers-color-scheme: dark)").matches
+        ? "dark"
+        : "light")
+    );
+  }
+  return "light";
+});
+
+useEffect(() => {
+  const html = document.documentElement;
+  html.setAttribute("data-theme", theme);
+  localStorage.setItem("theme", theme);
+}, [theme]);
+
+const toggleTheme = () => {
+  setTheme(prev => (prev === "light" ? "dark" : "light"));
+};
+
 
     return (
         <>
@@ -82,7 +105,7 @@ export default function Navigation({ openAuthModal }) {
                 initial={{ y: -100 }}
                 animate={{ y: 0 }}
                 transition={{ type: "spring", stiffness: 100 }}
-                className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
+                className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 dark:bg-gray-900 ${
                     scrolled 
                         ? 'bg-white/95 backdrop-blur-md shadow-lg' 
                         : 'bg-gray-50 border-b border-gray-200'
@@ -165,10 +188,50 @@ export default function Navigation({ openAuthModal }) {
                                     Login
                                 </motion.button>
                             )}
+                            <div
+  onClick={toggleTheme}
+  aria-label={`Switch to ${theme === "dark" ? "light" : "dark"} mode`}
+  className="
+    flex items-center justify-center
+    h-8 w-8 rounded-full
+    bg-gray-200 hover:bg-gray-300
+    dark:bg-gray-700 dark:hover:bg-gray-600
+    cursor-pointer transition-colors
+  "
+>
+  {theme === "dark" ? (
+    <MdDarkMode className="text-white" />
+  ) : (
+    <MdOutlineLightMode className="text-yellow-500" />
+  )}
+</div>
                         </div>
+                    
+                        
+
+        
 
                         {/* Mobile - Login Button + Hamburger */}
                         <div className="md:hidden flex items-center gap-3">
+
+                                                    <div
+  onClick={toggleTheme}
+  aria-label={`Switch to ${theme === "dark" ? "light" : "dark"} mode`}
+  className="
+    flex items-center justify-center
+    h-8 w-8 rounded-full
+    bg-gray-200 hover:bg-gray-300
+    dark:bg-gray-700 dark:hover:bg-gray-600
+    cursor-pointer transition-colors
+  "
+>
+  {theme === "dark" ? (
+    <MdDarkMode className="text-white" />
+  ) : (
+    <MdOutlineLightMode className="text-yellow-500" />
+  )}
+</div>
+
                             {/* Mobile Login Button - Always visible when not logged in */}
                             {!isLoggedIn && (
                                 <motion.button
@@ -185,7 +248,7 @@ export default function Navigation({ openAuthModal }) {
                             <motion.button
                                 whileTap={{ scale: 0.9 }}
                                 onClick={() => setIsOpen(!isOpen)}
-                                className="relative w-10 h-10 flex items-center justify-center"
+                                className="relative w-10 h-10 flex items-center justify-center text-red-500"
                                 aria-label="Toggle menu"
                             >
                                 <div className="flex flex-col space-y-1.5">
@@ -194,18 +257,18 @@ export default function Navigation({ openAuthModal }) {
                                             rotate: isOpen ? 45 : 0,
                                             y: isOpen ? 8 : 0,
                                         }}
-                                        className="w-6 h-0.5 bg-gray-900 block"
+                                        className="w-6 h-0.5 bg-gray-900 block dark:bg-gray-100"
                                     />
                                     <motion.span 
                                         animate={{ opacity: isOpen ? 0 : 1 }}
-                                        className="w-6 h-0.5 bg-gray-900 block"
+                                        className="w-6 h-0.5 bg-gray-900 block dark:bg-gray-100"
                                     />
                                     <motion.span 
                                         animate={{
                                             rotate: isOpen ? -45 : 0,
                                             y: isOpen ? -8 : 0,
                                         }}
-                                        className="w-6 h-0.5 bg-gray-900 block"
+                                        className="w-6 h-0.5 bg-gray-900 block dark:bg-gray-100"
                                     />
                                 </div>
                             </motion.button>
@@ -219,7 +282,7 @@ export default function Navigation({ openAuthModal }) {
                         initial={{ opacity: 0, height: 0 }}
                         animate={{ opacity: 1, height: 'auto' }}
                         exit={{ opacity: 0, height: 0 }}
-                        className="md:hidden border-t border-gray-200 bg-white"
+                        className="md:hidden border-t border-gray-200 bg-white dark:bg-gray-900"
                     >
                         <div className="px-4 py-4 space-y-2">
                             {navItems.map((item, index) => (
@@ -231,8 +294,8 @@ export default function Navigation({ openAuthModal }) {
                                     onClick={() => scrollToSection(item.id)}
                                     className={`w-full text-left px-4 py-3 rounded-lg font-medium transition-colors ${
                                         activeSection === item.id
-                                            ? 'bg-green-100 text-green-800'
-                                            : 'text-gray-700 hover:bg-gray-100'
+                                            ? 'bg-green-100 dark:bg-green-500/20 text-green-800'
+                                            : 'text-gray-700 dark:text-gray-100 hover:bg-gray-100 hover:dark:text-gray-900'
                                     }`}
                                 >
                                     {item.label}

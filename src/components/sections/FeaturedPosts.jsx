@@ -98,7 +98,7 @@ const FeaturedPosts = () =>  {
     }, []);
 
     return (
-        <section className="py-16 px-4 bg-gray-50">
+        <section className="py-16 px-4 bg-gray-50 dark:bg-gray-900">
             <div className="max-w-7xl mx-auto">
                 {/* Header */}
                 <motion.div 
@@ -107,8 +107,8 @@ const FeaturedPosts = () =>  {
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.6 }}
                 >
-                    <h2 className="text-4xl font-bold text-gray-900 mb-3">Featured Posts</h2>
-                    <p className="text-gray-600 max-w-2xl mx-auto">
+                    <h2 className="text-4xl font-bold text-gray-900 dark:text-gray-100 mb-3">Featured Posts</h2>
+                    <p className="text-gray-600 dark:text-slate-200 max-w-2xl mx-auto">
                         Explore our featured posts filled with ideas worth reading, sharing, and remembering.
                     </p>
                 </motion.div>

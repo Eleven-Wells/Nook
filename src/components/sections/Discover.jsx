@@ -42,10 +42,10 @@ const Discover = () => {
   return (
     <div>
       {/* Inspire Section */}
-      <section className="w-full pt-2 pb-15 md:pt-16 md:pb-16 px-4 md:px-6 md:mt-16">
+      <section className="w-full md:pt-40 pt-15 pb-15 md:pb-16 px-4 md:px-6  dark:bg-gray-800">
         <div className="max-w-6xl mx-auto">
           <motion.h2
-            className="text-4xl font-semibold text-center text-gray-800 mb-3"
+            className="text-4xl font-semibold text-center dark:text-gray-100 text-gray-800 mb-3"
             variants={fadeUp}
             initial="hidden"
             whileInView="visible"
@@ -55,7 +55,7 @@ const Discover = () => {
           </motion.h2>
 
           <motion.p
-            className="text-center text-gray-600 max-w-2xl mx-auto mb-14"
+            className="text-center text-gray-600 dark:text-gray-100 max-w-2xl mx-auto mb-14"
             variants={fadeUp}
             initial="hidden"
             whileInView="visible"
@@ -79,7 +79,7 @@ const Discover = () => {
               <motion.div
                 key={index}
                 onClick={() => handleCategoryClick(item.title)}
-                className="bg-white border border-gray-200 rounded-xl p-6 hover:border-green-500 hover:shadow-xl shadow-lg transition-all duration-300 group cursor-pointer"
+                className="bg-white border dark:bg-white/10 dark:border-gray-500 border-gray-200 rounded-xl p-6 hover:border-green-500 hover:shadow-xl shadow-lg transition-all duration-300 group cursor-pointer"
                 variants={fadeUp}
                 whileHover={{ scale: 1.03 }}
                 whileTap={{ scale: 0.98 }}
@@ -88,8 +88,8 @@ const Discover = () => {
                   <div className="text-green-700">{item.icon}</div>
                   <FiChevronRight className="text-gray-400 group-hover:text-green-700 transition-colors" size={22} />
                 </div>
-                <h3 className="text-lg font-semibold text-gray-800 mb-2">{item.title}</h3>
-                <p className="text-sm text-gray-500">{item.description}</p>
+                <h3 className="text-lg font-semibold dark:text-gray-400 text-gray-800 mb-2">{item.title}</h3>
+                <p className="text-sm dark:text-gray-100 text-gray-500">{item.description}</p>
               </motion.div>
             ))}
           </motion.div>
@@ -98,17 +98,17 @@ const Discover = () => {
         {/* How it works Section - Only show when NOT logged in */}
         {!isLoggedIn && (
           <motion.section 
-            className="w-full py-16 px-6 bg-slate-50 mt-15"
+            className="w-full py-16 px-6 bg-slate-50 mt-15 dark:bg-gray-900 dark:border-gray-200"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
           >
             <div className="max-w-6xl mx-auto">
               <motion.div className="text-center mb-16" variants={staggerContainer} initial="hidden" whileInView="visible" viewport={{ once: true }}>
-                <motion.h2 className="text-4xl md:text-5xl font-semibold text-slate-800 mb-4" variants={fadeUp}>
+                <motion.h2 className="text-4xl md:text-5xl font-semibold text-slate-800 dark:text-gray-100 mb-4" variants={fadeUp}>
                   How it works
                 </motion.h2>
-                <motion.p className="text-lg text-slate-600 max-w-2xl mx-auto" variants={fadeUp}>
+                <motion.p className="text-lg text-slate-400 max-w-2xl mx-auto" variants={fadeUp}>
                   Discover how our blog makes it easy for you to explore, learn, and share ideas that matter
                 </motion.p>
               </motion.div>
