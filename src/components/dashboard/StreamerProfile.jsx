@@ -18,8 +18,8 @@ import {
   FaSignOutAlt,
   FaMoneyBillWave,
 } from 'react-icons/fa';
-import { CiBank } from "react-icons/ci";
 import { MdEdit } from 'react-icons/md';
+import MonetizationTab from "./MonetizationTab";
 
 const StreamerProfile = () => {
   const { user, isLoggedIn, updateProfile } = useAuth();
@@ -171,37 +171,8 @@ const StreamerProfile = () => {
 
     reader.readAsDataURL(file);
   };
-// Monetization States
-const [paymentMethod, setPaymentMethod] = useState(null);
-const [isAddingPayment, setIsAddingPayment] = useState(false);
-const [bankForm, setBankForm] = useState({ bankName: '', accountNumber: '' });
 
-const handleBindBank = (e) => {
-  e.preventDefault();
-  // In a real app, you'd send this to your backend here
-  setPaymentMethod({
-    type: 'Bank Transfer',
-    last4: bankForm.accountNumber.slice(-4) || '0000',
-    bankName: bankForm.bankName || 'Unknown Bank'
-  });
-  setIsAddingPayment(false);
-};
 
-// Mock Data for the UI
-const monetizationMetrics = [
-  { title: 'TOTAL EARNED', value: '$1,284', detail: '+18% vs last month', detailColor: 'text-[#22c55e]' },
-  { title: 'PENDING', value: '$342', detail: 'Clears in ~3 days', detailColor: 'text-gray-500' },
-  { title: 'THIS MONTH', value: '$487', detail: '+5% vs Feb', detailColor: 'text-[#22c55e]' },
-  { title: 'SUBSCRIBERS', value: '124', detail: '+12 new this week', detailColor: 'text-[#22c55e]' }
-];
-
-const transactions = [
-  { date: 'Feb 18, 2025', desc: 'Subscription — @johndoe', type: 'Credit', amount: '+$9.99', status: 'Completed' },
-  { date: 'Feb 15, 2025', desc: 'Tip — @sarah_k', type: 'Credit', amount: '+$25.00', status: 'Completed' },
-  { date: 'Feb 12, 2025', desc: 'Ad Revenue — February', type: 'Credit', amount: '+$142.50', status: 'Pending' },
-  { date: 'Feb 10, 2025', desc: 'Withdrawal to GTBank', type: 'Debit', amount: '-$200.00', status: 'Completed' },
-  { date: 'Feb 05, 2025', desc: 'Subscription — @mark_b', type: 'Credit', amount: '+$9.99', status: 'Completed' }
-];
  return (
     <div className="flex min-h-screen bg-[#0B0F15] text-gray-200 pb-12">
 
@@ -572,7 +543,7 @@ const transactions = [
           )}
 
           {/* Other Tabs */}
-          {(activeTab === 'notifications') && (
+          {(activeTab === 'notifications' || activeTab === 'analytics' || activeTab === 'appearance' ) && (
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
@@ -592,159 +563,7 @@ const transactions = [
     animate={{ opacity: 1, y: 0 }}
     className="space-y-6"
   >
-    {/* Top Metrics Cards */}
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-      {monetizationMetrics.map((metric, i) => (
-        <div key={i} className="bg-[#13171F] p-6 rounded-2xl border border-white/10 shadow-lg">
-          <h3 className="text-[10px] font-bold text-gray-500 uppercase tracking-widest mb-4">
-            {metric.title}
-          </h3>
-          <div className="text-3xl font-bold text-white mb-2">{metric.value}</div>
-          <div className={`text-xs font-medium ${metric.detailColor} flex items-center gap-1`}>
-            {metric.detailColor === 'text-[#22c55e]' && <span>↑</span>}
-            {metric.detail}
-          </div>
-        </div>
-      ))}
-    </div>
-
-    {/* Middle Section: Chart & Payout Methods */}
-    <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-      
-      {/* Chart Area */}
-      <div className="lg:col-span-2 bg-[#13171F] p-6 rounded-2xl border border-white/10 shadow-lg flex flex-col min-h-[300px]">
-        <h3 className="text-lg font-bold text-white mb-6">Monthly Revenue</h3>
-        <div className="flex-1 border-b border-gray-800/50 mb-4 relative">
-          {/* Chart placeholder - You can drop Recharts or Chart.js here later */}
-        </div>
-        <div className="flex justify-around text-xs font-semibold text-gray-500 uppercase">
-          <span>Sep</span><span>Oct</span><span>Nov</span><span>Dec</span><span>Jan</span><span>Feb</span>
-        </div>
-      </div>
-
-      {/* Payout Methods Area */}
-      <div className="bg-[#13171F] p-6 rounded-2xl border border-white/10 shadow-lg flex flex-col">
-        <h3 className="text-lg font-bold text-white mb-6">Payout Methods</h3>
-        
-        <div className="flex-1 space-y-4">
-          {/* State 1: Display Bound Payment Method */}
-          {paymentMethod && (
-            <div className="flex items-center justify-between p-4 bg-white/[0.02] border border-white/5 rounded-xl">
-              <div className="flex items-center gap-4">
-                <div className="bg-[#1A8749]/20 p-3 rounded-lg text-[#22c55e]">
-                  <CiBank size={20} />
-                </div>
-                <div>
-                  <h4 className="text-white font-medium">{paymentMethod.type}</h4>
-                  <p className="text-xs text-gray-500">•••• {paymentMethod.last4} · {paymentMethod.bankName}</p>
-                </div>
-              </div>
-              <span className="bg-[#1A8749]/20 text-[#22c55e] text-[10px] font-bold px-3 py-1 rounded-full tracking-widest">
-                Active
-              </span>
-            </div>
-          )}
-
-          {/* State 2: Add New Payment Form */}
-          {isAddingPayment && !paymentMethod && (
-            <form onSubmit={handleBindBank} className="p-4 bg-white/[0.02] border border-[#22c55e]/30 rounded-xl space-y-4">
-              <div>
-                <label className="block text-[10px] font-bold text-gray-500 uppercase tracking-widest mb-2">Bank Name</label>
-                <input 
-                  required
-                  type="text" 
-                  value={bankForm.bankName}
-                  onChange={(e) => setBankForm({...bankForm, bankName: e.target.value})}
-                  className="w-full bg-[#0B0F15] text-white p-3 rounded-lg border border-gray-800 focus:border-[#22c55e] focus:outline-none text-sm transition-colors"
-                  placeholder="e.g. GTBank"
-                />
-              </div>
-              <div>
-                <label className="block text-[10px] font-bold text-gray-500 uppercase tracking-widest mb-2">Account Number</label>
-                <input 
-                  required
-                  type="text" 
-                  maxLength="12"
-                  value={bankForm.accountNumber}
-                  onChange={(e) => setBankForm({...bankForm, accountNumber: e.target.value})}
-                  className="w-full bg-[#0B0F15] text-white p-3 rounded-lg border border-gray-800 focus:border-[#22c55e] focus:outline-none text-sm transition-colors"
-                  placeholder="0000000000"
-                />
-              </div>
-              <div className="flex gap-2 pt-2">
-                <button type="button" onClick={() => setIsAddingPayment(false)} className="flex-1 py-2 text-xs font-bold text-gray-500 hover:text-white transition-colors">
-                  Cancel
-                </button>
-                <button type="submit" className="flex-1 py-2 bg-[#1A8749] text-white text-xs font-bold rounded-lg hover:bg-green-600 transition-colors">
-                  Save Details
-                </button>
-              </div>
-            </form>
-          )}
-        </div>
-
-        {/* State 3: Add Button (Only show if no payment method exists AND not currently adding) */}
-        {!paymentMethod && !isAddingPayment && (
-          <button 
-            onClick={() => setIsAddingPayment(true)}
-            className="mt-4 w-full py-4 border border-green-500 border-dashed rounded-xl text-sm font-semibold text-green-500 hover:text-green-700 hover:border-green-700 hover:bg-white/[0.02] transition-all"
-          >
-            + Add Payout Method
-          </button>
-        )}
-      </div>
-    </div>
-
-    {/* Bottom Section: Transaction History */}
-    <div className="bg-[#13171F] p-6 rounded-2xl border border-white/5 shadow-lg">
-      <div className="flex items-center justify-between mb-6">
-        <h3 className="text-lg font-bold text-white">Transaction History</h3>
-        <button className="flex items-center gap-2 bg-[#1A8749] text-white px-5 py-2.5 rounded-lg hover:bg-green-600 transition-all text-sm font-bold shadow-lg shadow-green-900/20">
-          <FaMoneyBillWave size={16} /> Withdraw
-        </button>
-      </div>
-
-      <div className="overflow-x-auto">
-        <table className="w-full text-left border-collapse">
-          <thead>
-            <tr className="border-b border-gray-800">
-              <th className="pb-4 text-[10px] font-bold text-gray-500 uppercase tracking-[0.2em]">Date</th>
-              <th className="pb-4 text-[10px] font-bold text-gray-500 uppercase tracking-[0.2em]">Description</th>
-              <th className="pb-4 text-[10px] font-bold text-gray-500 uppercase tracking-[0.2em]">Type</th>
-              <th className="pb-4 text-[10px] font-bold text-gray-500 uppercase tracking-[0.2em]">Amount</th>
-              <th className="pb-4 text-[10px] font-bold text-gray-500 uppercase tracking-[0.2em]">Status</th>
-            </tr>
-          </thead>
-          <tbody>
-            {transactions.map((tx, index) => (
-              <tr key={index} className="border-b border-gray-800/50 hover:bg-white/[0.02] transition-colors">
-                <td className="py-4 text-sm text-gray-400">{tx.date}</td>
-                <td className="py-4 text-sm text-white font-medium">{tx.desc}</td>
-                <td className="py-4">
-                  <span className={`text-[10px] font-bold px-2 py-1 rounded-full uppercase tracking-widest ${
-                    tx.type === 'Credit' ? 'text-[#22c55e] bg-[#1A8749]/10' : 'text-red-500 bg-red-500/10'
-                  }`}>
-                    {tx.type}
-                  </span>
-                </td>
-                <td className={`py-4 text-sm font-bold ${
-                  tx.amount.startsWith('+') ? 'text-[#22c55e]' : 'text-red-500'
-                }`}>
-                  {tx.amount}
-                </td>
-                <td className="py-4">
-                  <span className={`text-[10px] font-bold px-3 py-1 rounded-full uppercase tracking-widest border ${
-                    tx.status === 'Completed' ? 'border-[#22c55e]/30 text-[#22c55e]' : 'border-yellow-500/30 text-yellow-500'
-                  }`}>
-                    {tx.status}
-                  </span>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
-    </div>
+   <MonetizationTab />
   </motion.div>
 )}
 
