@@ -57,7 +57,14 @@ const StreamerProfile = () => {
     { id: 'monetization', label: 'Monetization', icon: FaDollarSign },
     { id: 'analytics', label: 'Analytics', icon: FaChartBar },
   ];
-
+  
+  const handleLogout = () => {
+        if (window.confirm('Are you sure you want to logout?')) {
+            logout();
+            setIsOpen(false);
+            navigate('/');
+        }
+    };
   const handleInputChange = (e) => {
     setProfileData({
       ...profileData,
@@ -174,13 +181,14 @@ const StreamerProfile = () => {
 
 
  return (
-    <div className="flex min-h-screen bg-[#0B0F15] text-gray-200 pb-12">
+    <div className="flex min-h-screen transition-colors duration-300 dark:bg-[#0B0F15] bg-
+    [f5f7fa] dark:text-gray-200 text-gray-600 pb-12">
 
 {/* DESKTOP SIDEBAR - Visible only on md screens and up */}
-  <aside className="hidden md:flex w-64 flex-col border-r border-white/10 bg-[#13171F] p-6 space-y-8">
+  <aside className="hidden md:flex w-64 flex-col border-r dark:border-white/10 border-gray-200 dark:bg-[#13171F] bg-gray-400/10 p-6 space-y-8 transition-colors">
     
     <nav className="space-y-1">
-      <p className="text-[10px] font-bold text-gray-500 uppercase tracking-[0.2em] mb-4 px-2">Account</p>
+      <p className="text-[10px] font-bold text-gray-600 dark:text-gray-500 uppercase tracking-[0.2em] mb-4 px-2">Account</p>
       {[
         { id: 'profile', icon: <FaUser />, label: 'Profile' },
         { id: 'security', icon: <FaLock />, label: 'Security' },
@@ -191,7 +199,8 @@ const StreamerProfile = () => {
           key={item.id}
           onClick={() => setActiveTab(item.id)}
           className={`w-full flex items-center justify-between px-4 py-3 rounded-xl transition-all ${
-            activeTab === item.id ? 'bg-[#1A8749]/10 text-[#22c55e] border border-white/10' : 'text-gray-400 hover:bg-white/5'
+            activeTab === item.id ? 'bg-[#1A8749]/10 text-[#22c55e] border border-green-200 dark:border-white/10' 
+                : 'text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-white/5'
           }`}
         >
           <div className="flex items-center gap-3">
@@ -199,7 +208,7 @@ const StreamerProfile = () => {
             <span className="font-medium">{item.label}</span>
           </div>
           {item.count && (
-            <span className="bg-[#22c55e] text-[#0B0F15] text-[10px] font-bold px-2 py-0.5 rounded-full">
+            <span className="bg-[#22c55e] text-white dark:text-[#0B0F15] text-[10px] font-bold px-2 py-0.5 rounded-full">
               {item.count}
             </span>
           )}
@@ -208,7 +217,7 @@ const StreamerProfile = () => {
     </nav>
 
     <div className="pt-4 space-y-1">
-      <p className="text-[10px] font-bold text-gray-500 uppercase tracking-[0.2em] mb-4 px-2">Creator</p>
+      <p className="text-[10px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-[0.2em] mb-4 px-2">Creator</p>
        {[
         { id: 'monetization', icon: <FaDollarSign />, label: 'Monetization' },
         { id: 'analytics', icon: <FaChartBar />, label: 'Analytics' },
@@ -217,7 +226,8 @@ const StreamerProfile = () => {
           key={item.id}
           onClick={() => setActiveTab(item.id)}
           className={`w-full flex items-center justify-between px-4 py-3 rounded-xl transition-all ${
-            activeTab === item.id ? 'bg-[#1A8749]/10 text-[#22c55e] border border-white/10' : 'text-gray-400 hover:bg-white/5'
+            activeTab === item.id ? 'bg-[#1A8749]/10 text-[#22c55e] border border-green-200 dark:border-white/10' 
+                : 'text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-white/5'
           }`}
         >
           <div className="flex items-center gap-3">
@@ -233,9 +243,11 @@ const StreamerProfile = () => {
       ))}
     </div>
 
-    <button className=" flex items-center gap-3 px-4 py-3 bg-red-500/10 text-red-500 rounded-xl hover:bg-red-500 hover:text-white transition-all font-bold uppercase text-xs tracking-widest border border-white/10">
+     <motion.button
+                                        whileTap={{ scale: 0.95 }}
+                                        onClick={handleLogout} className=" flex items-center gap-3 px-4 py-3 bg-red-500/10 text-red-500 rounded-xl hover:bg-red-500 hover:text-white transition-all font-bold uppercase text-xs tracking-widest border dark:border-white/10 border-gray-100">
       <FaSignOutAlt /> Logout
-    </button>
+    </motion.button>
   </aside>
 
       <div className="flex-1 p-4 md:p-10 max-w-5xl mx-auto w-full">
@@ -244,7 +256,7 @@ const StreamerProfile = () => {
         <motion.div 
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
-          className="bg-[#13171F] rounded-2xl shadow-xl overflow-hidden mb-8 border border-white/10"
+          className="dark:bg-[#13171F] bg-gray-400/10 rounded-2xl shadow-xl overflow-hidden mb-8 border dark:border-white/10 border-gray-200 transition-colors"
         >
           {/* Cover Photo Section */}
           <div className="relative h-40 w-full group">
@@ -286,7 +298,7 @@ const StreamerProfile = () => {
           <div className="px-8 pb-8 relative flex flex-col md:flex-row gap-6 items-start md:items-center">
             {/* Avatar overlapping the banner */}
             <div className="relative -mt-16">
-              <div className="w-28 h-28 rounded-full bg-gradient-to-tr from-[#00d2ff] to-[#3a7bd5] flex items-center justify-center text-[#0B0F15] text-4xl font-black shadow-xl overflow-hidden border-4 border-[#13171F]">
+              <div className="w-28 h-28 rounded-full bg-gradient-to-tr from-[#00d2ff] to-[#3a7bd5] flex items-center justify-center text-[#0B0F15] text-4xl font-black shadow-xl overflow-hidden border-4 border-gray-400/10 dark:border-[#13171F]">
                 {user?.profileImage ? (
                   <img 
                     src={user.profileImage} 
@@ -321,10 +333,10 @@ const StreamerProfile = () => {
 
             {/* Name and Badges */}
             <div className="flex-1 mt-2 md:mt-0">
-              <h1 className="text-2xl font-bold text-white mb-1">{profileData?.name || 'funmibi'}</h1>
-              <p className="text-gray-400 text-sm mb-3">{profileData?.email || 'abiodunfunmibi17@gmail.com'}</p>
+              <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-1">{profileData?.name || 'funmibi'}</h1>
+              <p className="text-gray-500 dark:text-gray-400 text-sm mb-3">{profileData?.email || 'abiodunfunmibi17@gmail.com'}</p>
               <div className="flex flex-wrap gap-3">
-                <span className="px-3 py-1 bg-[#1A8749]/20 text-[#22c55e] border border-[#1A8749]/30 rounded-full text-xs font-semibold">
+                <span className="px-3 py-1 bg-green-100 dark:bg-[#1A8749]/20 text-[#22c55e] border dark:border-[#1A8749]/30 border-green-300 rounded-full text-xs font-semibold">
                   Streamer
                 </span>
                 <span className="px-3 py-1 bg-blue-500/10 text-blue-400 border border-blue-500/20 rounded-full text-xs font-semibold">
@@ -336,7 +348,7 @@ const StreamerProfile = () => {
         </motion.div>
 
         {/* Horizontal Tabs */}
-        <div className="flex overflow-x-auto border-b border-gray-800 mb-8 hide-scrollbar">
+        <div className="flex overflow-x-auto border-b border-gray-200 dark:border-gray-800 mb-8 hide-scrollbar">
           <div className="flex gap-8 px-2">
             {tabs?.map((tab) => (
               <button
@@ -349,7 +361,7 @@ const StreamerProfile = () => {
                 className={`pb-4 text-sm font-medium transition-all whitespace-nowrap border-b-2 ${
                   activeTab === tab.id
                     ? 'border-[#22c55e] text-[#22c55e]'
-                    : 'border-transparent text-gray-500 hover:text-gray-300'
+                    : 'border-transparent text-gray-500 hover:text-gray-800 dark:hover:text-gray-300'
                 }`}
               >
                 {tab.label}
@@ -380,16 +392,18 @@ const StreamerProfile = () => {
   <motion.div
     initial={{ opacity: 0 }}
     animate={{ opacity: 1 }}
-    className="bg-[#13171F] rounded-2xl p-8 border border-white/10 shadow-2xl relative"
+    className="bg-white dark:bg-[#13171F] rounded-2xl p-8 border border-gray-200 dark:border-white/10 shadow-2xl relative transition-colors duration-300"
   >
     {/* Section Header */}
     <div className="flex items-center justify-between mb-10">
-      <h2 className="text-xl font-bold text-white tracking-tight">Personal Information</h2>
+      <h2 className="text-xl font-bold text-gray-900 dark:text-white tracking-tight">
+        Personal Information
+      </h2>
       
       {!isEditing && (
         <button 
           onClick={() => setIsEditing(true)}
-          className="flex items-center gap-2 text-xs font-semibold text-gray-400 border border-gray-700 px-4 py-2 rounded-lg hover:text-green-500 hover:border-green-600 transition-all uppercase tracking-widest"
+          className="flex items-center gap-2 text-xs font-semibold text-gray-500 dark:text-gray-400 bg-gray-200 dark:bg-[#13171F] border border-gray-200 dark:border-gray-700 px-4 py-2 rounded-lg hover:text-[#22c55e] dark:hover:text-green-500 hover:border-[#22c55e] dark:hover:border-green-600 transition-all uppercase tracking-widest"
         >
           <MdEdit size={16} /> Edit Profile
         </button>
@@ -398,7 +412,6 @@ const StreamerProfile = () => {
 
     {/* Form Fields Stack */}
     <div className="space-y-6">
-      
       {[
         { label: 'Full Name', name: 'name', type: 'text', placeholder: 'Your Name' },
         { label: 'Username', name: 'username', type: 'text', placeholder: 'username', isUsername: true },
@@ -407,17 +420,19 @@ const StreamerProfile = () => {
         { label: 'Location', name: 'location', type: 'text', placeholder: 'City, Country' }
       ].map((field) => (
         <div key={field.name} className="group">
-          <label className="block text-[10px] font-bold text-gray-500 uppercase tracking-[0.2em] mb-2 px-1">
+          <label className="block text-[10px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-[0.2em] mb-2 px-1">
             {field.label}
           </label>
           
           <div className={`transition-all duration-300 rounded-xl ${
             isEditing 
-              ? "bg-white/[0.03] border-l-2 border-transparent focus-within:border-green-500 focus-within:bg-white/[0.06]" 
+              ? "bg-gray-50 dark:bg-white/[0.03] border-l-2 border-transparent focus-within:border-[#22c55e] dark:focus-within:border-green-500 focus-within:bg-gray-100 dark:focus-within:bg-white/[0.06]" 
               : "bg-transparent border-l-2 border-transparent"
           }`}>
-            <div className="border-b border-gray-800/50 pb-3 flex items-center px-1">
-              {field.isUsername && <span className="text-gray-600 mr-1 text-lg font-medium">@</span>}
+            <div className="border-b border-gray-200 dark:border-gray-800/50 pb-3 flex items-center px-1">
+              {field.isUsername && (
+                <span className="text-gray-400 dark:text-gray-600 mr-1 text-lg font-medium">@</span>
+              )}
               
               {field.type === 'textarea' ? (
                 <textarea
@@ -426,8 +441,8 @@ const StreamerProfile = () => {
                   value={profileData?.[field.name] || ''}
                   onChange={handleInputChange}
                   rows="2"
-                  className={`w-full bg-transparent text-white text-base focus:outline-none transition-all resize-none p-2 ${
-                    isEditing ? "text-green-400 cursor-text" : "cursor-default overflow-hidden"
+                  className={`w-full bg-transparent text-gray-900 dark:text-white text-base focus:outline-none transition-all resize-none p-2 ${
+                    isEditing ? "text-[#1A8749] dark:text-green-400 cursor-text" : "cursor-default overflow-hidden"
                   }`}
                   placeholder={field.placeholder}
                 />
@@ -438,8 +453,8 @@ const StreamerProfile = () => {
                   readOnly={!isEditing}
                   value={profileData?.[field.name] || ''}
                   onChange={handleInputChange}
-                  className={`w-full bg-transparent text-white text-lg font-medium focus:outline-none transition-all p-2 ${
-                    isEditing ? "text-green-400 cursor-text" : "cursor-default"
+                  className={`w-full bg-transparent text-gray-900 dark:text-white text-lg font-medium focus:outline-none transition-all p-2 ${
+                    isEditing ? "text-[#1A8749] dark:text-green-400 cursor-text" : "cursor-default"
                   }`}
                   placeholder={field.placeholder}
                 />
@@ -448,19 +463,18 @@ const StreamerProfile = () => {
           </div>
         </div>
       ))}
-
     </div>
 
-    {/* Action Buttons - Appears at the bottom ONLY when editing */}
+    {/* Action Buttons */}
     {isEditing && (
       <motion.div 
         initial={{ opacity: 0, y: 15 }}
         animate={{ opacity: 1, y: 0 }}
-        className="flex justify-end items-center gap-8 mt-12 pt-8 border-t border-gray-800/50"
+        className="flex justify-end items-center gap-8 mt-12 pt-8 border-t border-gray-100 dark:border-gray-800/50"
       >
         <button 
           onClick={() => setIsEditing(false)}
-          className="text-xs font-bold text-gray-500 hover:text-white uppercase tracking-[0.2em] transition-colors"
+          className="text-xs font-bold text-gray-400 hover:text-gray-900 dark:hover:text-white uppercase tracking-[0.2em] transition-colors"
         >
           Cancel
         </button>
@@ -469,7 +483,7 @@ const StreamerProfile = () => {
             handleSave();
             setIsEditing(false);
           }}
-          className="flex items-center gap-3 bg-[#1A8749] text-white px-10 py-4 rounded-xl hover:bg-green-600 transition-all text-xs font-bold uppercase tracking-[0.2em] shadow-xl shadow-green-900/20 active:scale-95"
+          className="flex items-center gap-3 bg-[#1A8749] text-white px-10 py-4 rounded-xl hover:bg-green-600 transition-all text-xs font-bold uppercase tracking-[0.2em] shadow-xl shadow-green-900/10 dark:shadow-green-900/20 active:scale-95"
         >
           <FaSave size={14} /> Save Changes
         </button>
@@ -483,9 +497,9 @@ const StreamerProfile = () => {
              <motion.div
                initial={{ opacity: 0 }}
                animate={{ opacity: 1 }}
-               className="bg-[#13171F] rounded-2xl p-8  border border-white/10"
+               className="bg-white dark:bg-[#13171F] rounded-2xl p-8  border border-gray-200 dark:border-white/10 transition-colors shadow-2xl"
              >
-               <h2 className="text-xl font-bold text-white mb-8">Security Settings</h2>
+               <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-8">Security Settings</h2>
                
                <div className="space-y-6 max-w-xl">
                  <div>
@@ -497,7 +511,7 @@ const StreamerProfile = () => {
                      name="currentPassword"
                      value={passwordData?.currentPassword || ''}
                      onChange={handlePasswordChange}
-                     className="w-full bg-[#0B0F15] text-white p-4 rounded-xl border border-gray-800 focus:border-[#22c55e] focus:outline-none transition-colors"
+                     className="w-full bg-gray-50 dark:bg-[#0B0F15] text-gray-900 dark:text-white p-4 rounded-xl border border-gray-200 dark:border-gray-800 focus:border-[#22c55e] focus:outline-none transition-colors"
                      placeholder="Enter current password"
                    />
                  </div>
@@ -511,7 +525,7 @@ const StreamerProfile = () => {
                      name="newPassword"
                      value={passwordData?.newPassword || ''}
                      onChange={handlePasswordChange}
-                     className="w-full bg-[#0B0F15] text-white p-4 rounded-xl border border-gray-800 focus:border-[#22c55e] focus:outline-none transition-colors"
+                     className="w-full bg-gray-50 dark:bg-[#0B0F15] text-gray-900 dark:text-white p-4 rounded-xl border border-gray-200 dark:border-gray-800 focus:border-[#22c55e] focus:outline-none transition-colors"
                      placeholder="Enter new password"
                    />
                  </div>
@@ -525,7 +539,7 @@ const StreamerProfile = () => {
                      name="confirmPassword"
                      value={passwordData?.confirmPassword || ''}
                      onChange={handlePasswordChange}
-                     className="w-full bg-[#0B0F15] text-white p-4 rounded-xl border border-gray-800 focus:border-[#22c55e] focus:outline-none transition-colors"
+                     className="w-full bg-gray-50 dark:bg-[#0B0F15] text-gray-900 dark:text-white p-4 rounded-xl border border-gray-200 dark:border-gray-800 focus:border-[#22c55e] focus:outline-none transition-colors"
                      placeholder="Confirm new password"
                    />
                  </div>
@@ -547,9 +561,9 @@ const StreamerProfile = () => {
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
-              className="bg-[#13171F] rounded-2xl p-8 text-center  border border-white/10"
+              className="bg-white dark:bg-[#13171F] rounded-2xl p-8 text-center  border border-gray-200 dark:border-white/10 shadow-2xl"
             >
-              <h2 className="text-xl font-bold text-white mb-2">
+              <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-2">
                 {tabs?.find(tab => tab.id === activeTab)?.label}
               </h2>
               <p className="text-gray-500">This section is currently under development.</p>
