@@ -516,7 +516,8 @@ const StreamerProfile = () => {
                    />
                  </div>
 
-                 <div>
+                 <div className=" grid grid-cols-1 lg:grid-cols-5 gap-6">
+                  <div className="lg:col-span-2">
                    <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">
                      New Password
                    </label>
@@ -530,7 +531,7 @@ const StreamerProfile = () => {
                    />
                  </div>
 
-                 <div>
+                 <div className="lg:col-span-3">
                    <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">
                      Confirm New Password
                    </label>
@@ -542,6 +543,7 @@ const StreamerProfile = () => {
                      className="w-full bg-gray-50 dark:bg-[#0B0F15] text-gray-900 dark:text-white p-4 rounded-xl border border-gray-200 dark:border-gray-800 focus:border-[#22c55e] focus:outline-none transition-colors"
                      placeholder="Confirm new password"
                    />
+                   </div>
                  </div>
 
                  <motion.button
