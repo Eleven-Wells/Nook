@@ -1,8 +1,11 @@
 import React, { useState, useEffect } from "react";
+// eslint-disable-next-line no-unused-vars
 import { motion, AnimatePresence } from "framer-motion";
 import { useAuth } from "../../context/AuthContext";
 import Images from "../ui/Images";
 import { FaArrowRight, FaUser, FaClock } from "react-icons/fa";
+import { apiClient } from "../../utils/apiClient";
+import { API_ENDPOINTS } from "../../config/api";
 
 const Home = () => {
   const { isLoggedIn } = useAuth();
@@ -15,10 +18,8 @@ const Home = () => {
   const fetchPosts = async () => {
     setIsLoading(true);
     try {
-      const response = await fetch('https://blog-backend-4whx.onrender.com/api/v1/blogs/featured-posts');
-      if (!response.ok) throw new Error('Failed to fetch posts');
-      const data = await response.json();
-      setPosts(data.posts || []);
+      const data = await apiClient.get(API_ENDPOINTS.featuredPosts);
+      setPosts(data.posts || data || []);
     } catch (error) {
       console.error('Error fetching posts:', error);
     } finally {
@@ -57,13 +58,13 @@ const Home = () => {
   // Motion variants
   const containerVariants = {
     hidden: { opacity: 0 },
-    visible: { 
+    visible: {
       opacity: 1,
       transition: {
         staggerChildren: 0.2,
       },
     },
-    exit: { 
+    exit: {
       opacity: 0,
       transition: { duration: 0.5 }
     }
@@ -132,16 +133,16 @@ const Home = () => {
       key={post.id}
     >
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
-        
+
         {/* Left Side - Image */}
-        <motion.div 
+        <motion.div
           className="relative rounded-2xl overflow-hidden shadow-2xl group"
           whileHover={{ scale: 1.02 }}
           transition={{ duration: 0.3 }}
         >
-          <div className="aspect-[4/3] bg-gradient-to-br from-green-400 to-green-600">
-            <img 
-              src={post.image} 
+          <div className="aspect-4/3 bg-linear-to-br from-green-400 to-green-600">
+            <img
+              src={post.image}
               alt={post.title}
               className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
             />
@@ -193,7 +194,7 @@ const Home = () => {
           </motion.div>
 
           {/* Progress Indicator */}
-          <motion.div 
+          <motion.div
             className="flex items-center gap-2 mt-8"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
@@ -202,11 +203,10 @@ const Home = () => {
             {posts.map((_, index) => (
               <div
                 key={index}
-                className={`h-1.5 rounded-full transition-all duration-300 ${
-                  index === currentPostIndex 
-                    ? 'bg-green-700 w-12' 
+                className={`h-1.5 rounded-full transition-all duration-300 ${index === currentPostIndex
+                    ? 'bg-green-700 w-12'
                     : 'bg-gray-300 w-8'
-                }`}
+                  }`}
               />
             ))}
           </motion.div>
@@ -216,7 +216,7 @@ const Home = () => {
   );
 
   return (
-    <section className="bg-[#f7fcff] dark:bg-gray-900 w-full py-16 px-6 min-h-[600px] flex items-center">
+    <section className="bg-[#f7fcff] dark:bg-gray-900 w-full py-16 px-6 min-h-150 flex items-center">
       <AnimatePresence mode="wait">
         {!isLoggedIn || showOriginal ? (
           <OriginalContent key="original" />

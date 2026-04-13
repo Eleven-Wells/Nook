@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+// eslint-disable-next-line no-unused-vars
 import { motion, AnimatePresence } from 'framer-motion';
 import { BsWifiOff } from 'react-icons/bs';
 import { BiRefresh } from 'react-icons/bi';
@@ -13,23 +14,23 @@ export const ConnectionFailed = ({ onRetry, isRetrying, message }) => (
         className="flex flex-col items-center justify-center py-20"
     >
         <motion.div
-            animate={{ 
+            animate={{
                 rotate: [0, -10, 10, -10, 0],
             }}
-            transition={{ 
+            transition={{
                 duration: 0.5,
                 repeat: isRetrying ? Infinity : 0,
-                repeatDelay: 0.5 
+                repeatDelay: 0.5
             }}
         >
             <BsWifiOff className="text-gray-400 text-6xl mb-4" />
         </motion.div>
-        
+
         <h3 className="text-xl font-bold text-gray-900 mb-2">Connection Failed</h3>
         <p className="text-gray-600 text-sm mb-6 text-center max-w-md">
             {message || 'Unable to connect to the server. Please check your connection.'}
         </p>
-        
+
         <motion.button
             onClick={onRetry}
             disabled={isRetrying}
@@ -44,7 +45,7 @@ export const ConnectionFailed = ({ onRetry, isRetrying, message }) => (
 );
 
 // Main Featured Posts Section
-const LatestPost = () =>  {
+const LatestPost = () => {
     const [posts, setPosts] = useState([]);
     const [isLoading, setIsLoading] = useState(true);
     const [hasError, setHasError] = useState(false);
@@ -76,7 +77,7 @@ const LatestPost = () =>  {
             console.error('Error fetching posts:', error);
             setHasError(true);
             setIsLoading(false);
-            
+
             // Auto retry after 5 seconds
             setTimeout(() => {
                 if (hasError) {
@@ -101,7 +102,7 @@ const LatestPost = () =>  {
         <section className="py-16 px-4 bg-gray-50 dark:bg-gray-900">
             <div className="max-w-7xl mx-auto">
                 {/* Header */}
-                <motion.div 
+                <motion.div
                     className="text-center mb-12"
                     initial={{ opacity: 0, y: -20 }}
                     animate={{ opacity: 1, y: 0 }}
@@ -129,8 +130,8 @@ const LatestPost = () =>  {
                         </motion.div>
                     ) : hasError ? (
                         <motion.div key="error">
-                            <ConnectionFailed 
-                                onRetry={handleRetry} 
+                            <ConnectionFailed
+                                onRetry={handleRetry}
                                 isRetrying={isRetrying}
                                 message="Unable to load featured posts. Please check your connection and try again."
                             />
@@ -150,14 +151,14 @@ const LatestPost = () =>  {
                                     animate={{ opacity: 1, y: 0 }}
                                     transition={{ duration: 0.5, delay: index * 0.1 }}
                                 >
-                                    <BlogCard 
+                                    <BlogCard
                                         image={post.image}
                                         title={post.title}
                                         description={post.description}
                                         date={post.date}
                                         link={post.link}
                                         category={post.category}
-                                        // isLoading={false}
+                                    // isLoading={false}
                                     />
                                 </motion.div>
                             ))}
@@ -167,7 +168,7 @@ const LatestPost = () =>  {
 
                 {/* See More Button */}
                 {!isLoading && !hasError && posts.length > 0 && (
-                    <motion.div 
+                    <motion.div
                         className="text-center mt-12"
                         initial={{ opacity: 0 }}
                         animate={{ opacity: 1 }}

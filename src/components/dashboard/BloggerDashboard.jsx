@@ -1,12 +1,13 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
+// eslint-disable-next-line no-unused-vars
 import { motion } from 'framer-motion';
-import { 
-  FaPen, 
-  FaHome, 
-  FaChartLine, 
-  FaCog, 
+import {
+  FaPen,
+  FaHome,
+  FaChartLine,
+  FaCog,
   FaBookmark,
   FaPlus,
   FaEye,
@@ -17,17 +18,60 @@ import {
 import { MdArticle } from 'react-icons/md';
 
 const BloggerDashboard = () => {
-  const { user, isBlogger, logout, updateProfile } = useAuth();
+  const { user, isBlogger, updateProfile } = useAuth();
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState('overview');
   const fileInputRef = useRef(null);
   const [uploading, setUploading] = useState(false);
 
-  React.useEffect(() => {
+  useEffect(() => {
     if (!isBlogger) {
       navigate('/profile');
     }
   }, [isBlogger, navigate]);
+
+  const handleImageUpload = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    if (!file.type.startsWith('image/')) {
+      alert('Please upload an image file');
+      return;
+    }
+
+    if (file.size > 5 * 1024 * 1024) {
+      alert('Image size should be less than 5MB');
+      return;
+    }
+
+    setUploading(true);
+    const reader = new FileReader();
+
+    reader.onloadend = async () => {
+      try {
+        await updateProfile({ profileImage: reader.result });
+      } catch (err) {
+        alert(err.message || 'Failed to upload image');
+      } finally {
+        setUploading(false);
+      }
+    };
+
+    reader.onerror = () => {
+      alert('Failed to read image file');
+      setUploading(false);
+    };
+
+    reader.readAsDataURL(file);
+  };
+
+  const triggerFileInput = () => {
+    fileInputRef.current?.click();
+  };
+
+  const handleNewPost = () => {
+    alert('New post feature coming soon!');
+  };
 
   const posts = [
     { id: 1, title: 'Getting Started with React', views: 1234, likes: 89, comments: 23, status: 'published' },
@@ -50,46 +94,12 @@ const BloggerDashboard = () => {
     { id: 'settings', label: 'Settings', icon: FaCog },
   ];
 
-  const handleImageUpload = (e) => {
-    const file = e.target.files[0];
-    if (!file) return;
-
-    if (!file.type.startsWith('image/')) {
-      alert('Please upload an image file');
-      return;
-    }
-
-    if (file.size > 5 * 1024 * 1024) {
-      alert('Image size should be less than 5MB');
-      return;
-    }
-
-    setUploading(true);
-    const reader = new FileReader();
-    
-    reader.onloadend = () => {
-      updateProfile({ profileImage: reader.result });
-      setUploading(false);
-    };
-
-    reader.onerror = () => {
-      alert('Failed to upload image');
-      setUploading(false);
-    };
-
-    reader.readAsDataURL(file);
-  };
-
-  const triggerFileInput = () => {
-    fileInputRef.current?.click();
-  };
-
   return (
     <div className="min-h-screen bg-gray-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        
+
         {/* Header */}
-        <motion.div 
+        <motion.div
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
           className="bg-white rounded-2xl shadow-lg p-6 mb-8"
@@ -98,11 +108,11 @@ const BloggerDashboard = () => {
             <div className="flex items-center gap-4">
               {/* Profile Image with Upload */}
               <div className="relative">
-                <div className="w-16 h-16 rounded-full bg-gradient-to-br from-green-400 to-green-600 flex items-center justify-center text-white text-2xl font-bold overflow-hidden">
+                <div className="w-16 h-16 rounded-full bg-linear-to-br from-green-400 to-green-600 flex items-center justify-center text-white text-2xl font-bold overflow-hidden">
                   {user?.profileImage ? (
-                    <img 
-                      src={user.profileImage} 
-                      alt={user.username} 
+                    <img
+                      src={user.profileImage}
+                      alt={user.username}
                       className="w-full h-full object-cover"
                     />
                   ) : (
@@ -130,14 +140,14 @@ const BloggerDashboard = () => {
                   className="hidden"
                 />
               </div>
-              
+
               <div>
                 <h1 className="text-2xl font-bold text-gray-900">Welcome back, {user?.username}!</h1>
                 {/* Multiple Niches Display */}
                 <div className="flex flex-wrap gap-2 mt-1">
                   {user?.niches && user.niches.length > 0 ? (
                     user.niches.map((niche, index) => (
-                      <span 
+                      <span
                         key={index}
                         className="px-2 py-1 bg-green-100 text-green-700 text-xs font-semibold rounded-full"
                       >
@@ -153,6 +163,7 @@ const BloggerDashboard = () => {
             <motion.button
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
+              onClick={handleNewPost}
               className="px-6 py-3 bg-green-600 text-white rounded-xl font-semibold hover:bg-green-700 transition-all shadow-lg flex items-center gap-2"
             >
               <FaPlus /> New Post
@@ -161,9 +172,9 @@ const BloggerDashboard = () => {
         </motion.div>
 
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
-          
+
           {/* Sidebar */}
-          <motion.div 
+          <motion.div
             initial={{ opacity: 0, x: -20 }}
             animate={{ opacity: 1, x: 0 }}
             className="lg:col-span-1"
@@ -175,11 +186,10 @@ const BloggerDashboard = () => {
                     key={item.id}
                     whileHover={{ x: 5 }}
                     onClick={() => setActiveTab(item.id)}
-                    className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl font-medium transition-all ${
-                      activeTab === item.id
+                    className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl font-medium transition-all ${activeTab === item.id
                         ? 'bg-green-100 text-green-700'
                         : 'text-gray-600 hover:bg-gray-100'
-                    }`}
+                      }`}
                   >
                     <item.icon size={20} />
                     {item.label}
@@ -191,7 +201,7 @@ const BloggerDashboard = () => {
 
           {/* Main Content */}
           <div className="lg:col-span-3">
-            
+
             {/* Overview Tab */}
             {activeTab === 'overview' && (
               <motion.div
@@ -245,11 +255,10 @@ const BloggerDashboard = () => {
                               </span>
                             </div>
                           </div>
-                          <span className={`px-3 py-1 rounded-full text-xs font-semibold ${
-                            post.status === 'published' 
-                              ? 'bg-green-100 text-green-700' 
+                          <span className={`px-3 py-1 rounded-full text-xs font-semibold ${post.status === 'published'
+                              ? 'bg-green-100 text-green-700'
                               : 'bg-yellow-100 text-yellow-700'
-                          }`}>
+                            }`}>
                             {post.status}
                           </span>
                         </div>

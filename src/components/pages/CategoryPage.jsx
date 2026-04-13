@@ -2,6 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { FaSearch, FaUser, FaHeart, FaComment, FaEye, FaArrowLeft } from 'react-icons/fa';
+import { apiClient } from '../../utils/apiClient';
+import { API_ENDPOINTS } from '../../config/api';
 
 const CategoryPage = () => {
   const { category } = useParams();
@@ -9,111 +11,40 @@ const CategoryPage = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [bloggers, setBloggers] = useState([]);
   const [posts, setPosts] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
 
-  // Mock posts data - In production, fetch from API/database
-  const mockPosts = [
+  const fallbackPosts = [
     {
       id: 1,
-      title: "Getting Started with React Hooks",
+      title: `Getting Started with ${category}`,
       excerpt: "Learn how to use React Hooks to manage state and side effects in your applications...",
       author: "John Doe",
-      authorEmail: "john@example.com",
-      category: "Technology",
+      category: category,
       likes: 234,
       comments: 45,
       views: 1200,
       image: "https://via.placeholder.com/400x250",
       date: "2024-01-15"
-    },
-    {
-      id: 2,
-      title: "10 Fashion Trends for 2024",
-      excerpt: "Discover the hottest fashion trends that will dominate the fashion scene this year...",
-      author: "Jane Smith",
-      authorEmail: "jane@example.com",
-      category: "Fashion",
-      likes: 456,
-      comments: 78,
-      views: 2300,
-      image: "https://via.placeholder.com/400x250",
-      date: "2024-01-14"
-    },
-    {
-      id: 3,
-      title: "Understanding JavaScript Closures",
-      excerpt: "Deep dive into JavaScript closures and how they work under the hood...",
-      author: "Mike Johnson",
-      authorEmail: "mike@example.com",
-      category: "Technology",
-      likes: 189,
-      comments: 32,
-      views: 890,
-      image: "https://via.placeholder.com/400x250",
-      date: "2024-01-13"
-    },
-    {
-      id: 4,
-      title: "Healthy Eating Tips for Busy Professionals",
-      excerpt: "Maintain a healthy diet even with a hectic schedule with these practical tips...",
-      author: "Sarah Williams",
-      authorEmail: "sarah@example.com",
-      category: "Health",
-      likes: 312,
-      comments: 56,
-      views: 1500,
-      image: "https://via.placeholder.com/400x250",
-      date: "2024-01-12"
-    },
-    {
-      id: 5,
-      title: "Best Travel Destinations in Asia",
-      excerpt: "Explore the most beautiful and affordable travel destinations across Asia...",
-      author: "Tom Anderson",
-      authorEmail: "tom@example.com",
-      category: "Travel",
-      likes: 567,
-      comments: 89,
-      views: 3400,
-      image: "https://via.placeholder.com/400x250",
-      date: "2024-01-11"
-    },
-    {
-      id: 6,
-      title: "Modern Web Development Best Practices",
-      excerpt: "Essential practices every web developer should follow in 2024...",
-      author: "Alice Brown",
-      authorEmail: "alice@example.com",
-      category: "Technology",
-      likes: 423,
-      comments: 67,
-      views: 2100,
-      image: "https://via.placeholder.com/400x250",
-      date: "2024-01-10"
     }
   ];
 
   useEffect(() => {
-    // Get all users from localStorage
-    const users = JSON.parse(localStorage.getItem('users')) || [];
-    
-    // Filter bloggers who have this category in their niches
-    const categoryBloggers = users.filter(user => 
-      user.role === 'blogger' && 
-      user.niches && 
-      user.niches.some(niche => niche.toLowerCase() === category.toLowerCase())
-    );
-    
-    setBloggers(categoryBloggers);
+    const fetchCategoryData = async () => {
+      setIsLoading(true);
+      try {
+        const data = await apiClient.get(`${API_ENDPOINTS.featuredPosts}?category=${category}`);
+        setPosts(data.posts || data || []);
+      } catch (error) {
+        console.error('Error fetching posts:', error);
+        setPosts(fallbackPosts);
+      } finally {
+        setIsLoading(false);
+      }
+    };
 
-    // Filter posts by category
-    const categoryPosts = mockPosts.filter(post => 
-      post.category.toLowerCase() === category.toLowerCase()
-    );
-    
-    setPosts(categoryPosts);
+    fetchCategoryData();
   }, [category]);
 
-  // Filter posts based on search query
   const filteredPosts = posts.filter(post =>
     post.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
     post.excerpt.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -123,8 +54,7 @@ const CategoryPage = () => {
   return (
     <div className="min-h-screen bg-gray-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        
-        {/* Back Button */}
+
         <motion.button
           initial={{ opacity: 0, x: -20 }}
           animate={{ opacity: 1, x: 0 }}
@@ -135,7 +65,6 @@ const CategoryPage = () => {
           <FaArrowLeft /> Back to Home
         </motion.button>
 
-        {/* Header with Search */}
         <motion.div
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -148,7 +77,6 @@ const CategoryPage = () => {
             Explore articles and content from bloggers specializing in {category}
           </p>
 
-          {/* Search Bar */}
           <div className="relative">
             <FaSearch className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" size={20} />
             <input
@@ -160,7 +88,6 @@ const CategoryPage = () => {
             />
           </div>
 
-          {/* Stats */}
           <div className="mt-6 flex flex-wrap gap-4 text-sm text-gray-600">
             <span className="flex items-center gap-2">
               <FaUser /> {bloggers.length} Bloggers
@@ -171,7 +98,6 @@ const CategoryPage = () => {
           </div>
         </motion.div>
 
-        {/* Featured Bloggers */}
         {bloggers.length > 0 && (
           <motion.div
             initial={{ opacity: 0, y: 20 }}
@@ -188,7 +114,7 @@ const CategoryPage = () => {
                   transition={{ delay: index * 0.1 }}
                   className="bg-white rounded-xl shadow-md p-6 text-center hover:shadow-xl transition-all cursor-pointer"
                 >
-                  <div className="w-16 h-16 mx-auto mb-3 rounded-full bg-gradient-to-br from-green-400 to-green-600 flex items-center justify-center text-white text-xl font-bold">
+                  <div className="w-16 h-16 mx-auto mb-3 rounded-full bg-linear-to-br from-green-400 to-green-600 flex items-center justify-center text-white text-xl font-bold">
                     {blogger.username?.charAt(0).toUpperCase()}
                   </div>
                   <h3 className="font-semibold text-gray-900 mb-1">{blogger.username}</h3>
@@ -205,7 +131,6 @@ const CategoryPage = () => {
           </motion.div>
         )}
 
-        {/* Blog Posts Grid */}
         <div>
           <h2 className="text-2xl font-bold text-gray-900 mb-6">
             {searchQuery ? `Search Results (${filteredPosts.length})` : 'Latest Articles'}
@@ -214,7 +139,7 @@ const CategoryPage = () => {
           {filteredPosts.length === 0 ? (
             <div className="bg-white rounded-2xl shadow-lg p-12 text-center">
               <p className="text-gray-600 text-lg">
-                {searchQuery 
+                {searchQuery
                   ? `No articles found for "${searchQuery}"`
                   : `No articles available in ${category} yet. Check back soon!`
                 }
@@ -231,10 +156,9 @@ const CategoryPage = () => {
                   whileHover={{ y: -5 }}
                   className="bg-white rounded-2xl shadow-lg overflow-hidden cursor-pointer hover:shadow-xl transition-all"
                 >
-                  {/* Post Image */}
-                  <div className="relative h-48 bg-gradient-to-br from-green-400 to-green-600">
-                    <img 
-                      src={post.image} 
+                  <div className="relative h-48 bg-linear-to-br from-green-400 to-green-600">
+                    <img
+                      src={post.image}
                       alt={post.title}
                       className="w-full h-full object-cover"
                     />
@@ -243,7 +167,6 @@ const CategoryPage = () => {
                     </span>
                   </div>
 
-                  {/* Post Content */}
                   <div className="p-6">
                     <h3 className="text-xl font-bold text-gray-900 mb-2 line-clamp-2">
                       {post.title}
@@ -252,9 +175,8 @@ const CategoryPage = () => {
                       {post.excerpt}
                     </p>
 
-                    {/* Author Info */}
                     <div className="flex items-center gap-3 mb-4 pb-4 border-b border-gray-200">
-                      <div className="w-10 h-10 rounded-full bg-gradient-to-br from-green-400 to-green-600 flex items-center justify-center text-white font-bold">
+                      <div className="w-10 h-10 rounded-full bg-linear-to-br from-green-400 to-green-600 flex items-center justify-center text-white font-bold">
                         {post.author.charAt(0)}
                       </div>
                       <div>
@@ -263,7 +185,6 @@ const CategoryPage = () => {
                       </div>
                     </div>
 
-                    {/* Engagement Stats */}
                     <div className="flex items-center justify-between text-sm text-gray-600">
                       <span className="flex items-center gap-1">
                         <FaHeart className="text-red-500" /> {post.likes}

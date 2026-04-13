@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { FiMail } from "react-icons/fi";
 import { PiShootingStar } from "react-icons/pi";
+// eslint-disable-next-line no-unused-vars
 import { motion } from "framer-motion";
 
 const StayInLoop = () => {
