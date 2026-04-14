@@ -1,8 +1,11 @@
 import { useState, useEffect } from 'react';
+// eslint-disable-next-line no-unused-vars
 import { motion, AnimatePresence } from 'framer-motion';
 import { BsWifiOff } from 'react-icons/bs';
 import { BiRefresh } from 'react-icons/bi';
 import { TrendingCard, ShimmerCard } from '../ui/Card.jsx';
+import { API_BASE_URL, API_ENDPOINTS } from '../../config/api';
+import { apiClient } from '../../utils/apiClient';
 
 // Reusable Connection Failed Component
 export const ConnectionFailed = ({ onRetry, isRetrying, message }) => (
@@ -13,23 +16,23 @@ export const ConnectionFailed = ({ onRetry, isRetrying, message }) => (
         className="flex flex-col items-center justify-center py-20"
     >
         <motion.div
-            animate={{ 
+            animate={{
                 rotate: [0, -10, 10, -10, 0],
             }}
-            transition={{ 
+            transition={{
                 duration: 0.5,
                 repeat: isRetrying ? Infinity : 0,
-                repeatDelay: 0.5 
+                repeatDelay: 0.5
             }}
         >
             <BsWifiOff className="text-gray-400 text-6xl mb-4" />
         </motion.div>
-        
+
         <h3 className="text-xl font-bold text-gray-900 mb-2">Connection Failed</h3>
         <p className="text-gray-600 text-sm mb-6 text-center max-w-md">
             {message || 'Unable to connect to the server. Please check your connection.'}
         </p>
-        
+
         <motion.button
             onClick={onRetry}
             disabled={isRetrying}
@@ -44,7 +47,7 @@ export const ConnectionFailed = ({ onRetry, isRetrying, message }) => (
 );
 
 // Main Featured Posts Section
-const FeaturedPosts = () =>  {
+const FeaturedPosts = () => {
     const [posts, setPosts] = useState([]);
     const [isLoading, setIsLoading] = useState(true);
     const [hasError, setHasError] = useState(false);
@@ -54,30 +57,15 @@ const FeaturedPosts = () =>  {
         setIsLoading(true);
         setHasError(false);
 
-        const controller = new AbortController();
-        const timeoutId = setTimeout(() => controller.abort(), 20000); // 20 seconds timeout
-
         try {
-            const response = await fetch('https://blog-backend-4whx.onrender.com/api/v1/blogs/featured-posts', {
-                signal: controller.signal
-            });
-
-            clearTimeout(timeoutId);
-
-            if (!response.ok) {
-                throw new Error('Failed to fetch posts');
-            }
-
-            const data = await response.json();
-            setPosts(data.posts);
+            const data = await apiClient.get(API_ENDPOINTS.featuredPosts);
+            setPosts(data.posts || data || []);
             setIsLoading(false);
         } catch (error) {
-            clearTimeout(timeoutId);
             console.error('Error fetching posts:', error);
             setHasError(true);
             setIsLoading(false);
-            
-            // Auto retry after 5 seconds
+
             setTimeout(() => {
                 if (hasError) {
                     handleRetry();
@@ -95,13 +83,14 @@ const FeaturedPosts = () =>  {
 
     useEffect(() => {
         fetchPosts();
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
     return (
         <section className="py-16 px-4 bg-gray-50 dark:bg-gray-900">
             <div className="max-w-7xl mx-auto">
                 {/* Header */}
-                <motion.div 
+                <motion.div
                     className="text-center mb-12"
                     initial={{ opacity: 0, y: -20 }}
                     animate={{ opacity: 1, y: 0 }}
@@ -129,8 +118,8 @@ const FeaturedPosts = () =>  {
                         </motion.div>
                     ) : hasError ? (
                         <motion.div key="error">
-                            <ConnectionFailed 
-                                onRetry={handleRetry} 
+                            <ConnectionFailed
+                                onRetry={handleRetry}
                                 isRetrying={isRetrying}
                                 message="Unable to load featured posts. Please check your connection and try again."
                             />
@@ -150,7 +139,7 @@ const FeaturedPosts = () =>  {
                                     animate={{ opacity: 1, y: 0 }}
                                     transition={{ duration: 0.5, delay: index * 0.1 }}
                                 >
-                                    <TrendingCard 
+                                    <TrendingCard
                                         image={post.image}
                                         title={post.title}
                                         description={post.description}
@@ -166,7 +155,7 @@ const FeaturedPosts = () =>  {
 
                 {/* See More Button */}
                 {!isLoading && !hasError && posts.length > 0 && (
-                    <motion.div 
+                    <motion.div
                         className="text-center mt-12"
                         initial={{ opacity: 0 }}
                         animate={{ opacity: 1 }}

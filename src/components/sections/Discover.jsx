@@ -2,6 +2,7 @@ import React from "react";
 import { useNavigate } from "react-router-dom";
 import { FiChevronRight, FiCompass, FiBook, FiUsers, FiShare2, FiBookOpen, FiAward, FiCoffee, FiTrendingUp, FiLayers } from "react-icons/fi";
 import { FaFire } from "react-icons/fa";
+// eslint-disable-next-line no-unused-vars
 import { motion } from "framer-motion";
 import { useAuth } from "../../context/AuthContext";
 
@@ -61,7 +62,7 @@ const Discover = () => {
             whileInView="visible"
             viewport={{ once: true }}
           >
-            {isLoggedIn 
+            {isLoggedIn
               ? "Filter articles by your interests and discover content that matters to you."
               : "Discover insightful articles across design, technology, lifestyle, and productivity. Join our community of curious minds."
             }
@@ -97,7 +98,7 @@ const Discover = () => {
 
         {/* How it works Section - Only show when NOT logged in */}
         {!isLoggedIn && (
-          <motion.section 
+          <motion.section
             className="w-full py-16 px-6 bg-slate-50 mt-15 dark:bg-gray-900 dark:border-gray-200"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
