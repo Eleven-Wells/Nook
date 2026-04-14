@@ -120,7 +120,7 @@ const toggleTheme = () => {
                             className="shrink-0 cursor-pointer"
                             onClick={() => navigate('/')}
                         >
-                            <span className="text-xl font-bold text-green-800">LUMEBLOG</span>
+                            <span className="text-xl font-bold text-green-800">Nook</span>
                         </motion.div>
 
                         {/* Desktop Navigation */}
