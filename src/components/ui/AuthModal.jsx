@@ -32,6 +32,8 @@ const AuthModal = ({ onClose, onLoginSuccess }) => {
     name: "",
     email: "",
     password: "",
+    niches: "",
+    agreedToTerms: false
   });
   const [loginData, setLoginData] = useState({
     email: "",
@@ -103,20 +105,34 @@ const AuthModal = ({ onClose, onLoginSuccess }) => {
       displayError("Password must be at least 6 characters");
       return;
     }
-
+    if (!streamerData.niches) {
+      displayError("Please select a niche");
+      return;
+    }
+    if (!streamerData.agreedToTerms) {
+      displayError("You must agree to terms");
+      return;
+    }
     console.log('[AuthModal] Submitting streamer signup:', {
-      name: streamerData.name,
       email: streamerData.email,
-      role: "streamer"
+      password: streamerData.password,
+      role: "streamer",
+      name: streamerData.name,
+      username: streamerData.name.split(' ').join('').toLowerCase(),
+      niches: streamerData.niches,
+      agreedToTerms: streamerData.agreedToTerms
     });
 
     setIsLoading(true);
     try {
       const result = await signup({
-        name: streamerData.name,
         email: streamerData.email,
         password: streamerData.password,
-        role: "streamer"
+        role: "streamer",
+        name: streamerData.name,
+        username: streamerData.name.split(' ').join('').toLowerCase(),
+        niches: streamerData.niches,
+        agreedToTerms: streamerData.agreedToTerms
       });
       console.log('[AuthModal] Streamer signup result:', result);
 
@@ -347,7 +363,7 @@ const AuthModal = ({ onClose, onLoginSuccess }) => {
           animate={{ opacity: 1, y: 0 }}
           className="text-2xl font-bold text-center mb-6 text-gray-900 dark:text-gray-100"
         >
-          {mode === "choose" && "Join LUMEBLOG"}
+          {mode === "choose" && "Join Nook"}
           {mode === "streamer" && "Create Your Streamer Account"}
           {mode === "bloggerStep1" && "Blogger Registration – Step 1"}
           {mode === "bloggerStep2" && "Blogger Registration – Step 2"}
@@ -450,45 +466,79 @@ const AuthModal = ({ onClose, onLoginSuccess }) => {
                 />
               </div>
 
-              <motion.button
-                whileHover={{ scale: 1.02 }}
-                whileTap={{ scale: 0.98 }}
-                onClick={handleStreamerSignup}
-                disabled={!streamerData.name || !streamerData.email || !streamerData.password || isLoading}
-                className="w-full py-3 bg-green-600 text-white font-semibold rounded-xl hover:bg-green-700 transition-all duration-200 shadow-lg disabled:bg-gray-400 disabled:cursor-not-allowed flex items-center justify-center"
-              >
-                {isLoading ? (
-                  <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                ) : (
-                  "Create Streamer Account"
-                )}
-              </motion.button>
-
-              <div className="relative flex items-center my-2">
-                <div className="grow border-t border-gray-300"></div>
-                <span className="shrink mx-4 text-gray-500 text-sm">Or continue with</span>
-                <div className="grow border-t border-gray-300"></div>
+              <div className="relative">
+                <FaHashtag className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" />
+                <select
+                  className="w-full border dark:text-gray-100 border-gray-300 rounded-xl pl-12 pr-4 py-3 focus:outline-none focus:ring-2 focus:ring-green-500 transition-all"
+                  value={streamerData.niches}
+                  onChange={(e) => setStreamerData({ ...streamerData, niches: e.target.value })}
+                  required
+                >
+                  <option value="">Select Niche *</option>
+                  <option value="Technology">Technology</option>
+                  <option value="Fashion">Fashion</option>
+                  <option value="Food">Food</option>
+                  <option value="Travel">Travel</option>
+                  <option value="Lifestyle">Lifestyle</option>
+                  <option value="Health">Health</option>
+                  <option value="Business">Business</option>
+                </select>
               </div>
+              
+              <label className="flex items-start gap-3 p-3 bg-gray-50 rounded-xl cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={streamerData.agreedToTerms}
+                  onChange={(e) => setStreamerData({ ...streamerData, agreedToTerms: e.target.checked })}
+                  className="mt-1 w-5 h-5 rounded border-gray-300 text-green-600 focus:ring-green-500"
+                />
+                <span className="text-sm text-gray-700">
+                  I agree to Terms & Conditions
+                </span>
+              </label>
 
-              <motion.button
-                whileHover={{ scale: 1.02 }}
-                whileTap={{ scale: 0.98 }}
-                className="w-full py-3 border dark:text-gray-100 dark:hover:text-black border-gray-300 rounded-xl flex items-center justify-center gap-3 hover:bg-gray-50 transition-all duration-200 font-medium"
-                onClick={() => handleSocialLogin('Google')}
-              >
-                <FaGoogle className="text-red-500" size={20} />
-                Sign up with Google
-              </motion.button>
+              {/* Update button disabled state */}
+              
+                <motion.button
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
+                  onClick={handleStreamerSignup}
+                  className="w-full py-3 bg-green-600 text-white font-semibold rounded-xl hover:bg-green-700 transition-all duration-200 shadow-lg disabled:bg-gray-400 disabled:cursor-not-allowed flex items-center justify-center"
+                  disabled={!streamerData.name || !streamerData.email || !streamerData.password ||
+                    !streamerData.niches || !streamerData.agreedToTerms || isLoading}
+                >
+                  {isLoading ? (
+                    <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                  ) : (
+                    "Create Streamer Account"
+                  )}
+                </motion.button>
 
-              <motion.button
-                whileHover={{ scale: 1.02 }}
-                whileTap={{ scale: 0.98 }}
-                className="w-full py-3 border dark:text-gray-100 dark:hover:text-black border-gray-300 rounded-xl flex items-center justify-center gap-3 hover:bg-gray-50 transition-all duration-200 font-medium"
-                onClick={() => handleSocialLogin('Facebook')}
-              >
-                <FaFacebook className="text-blue-600" size={20} />
-                Sign up with Facebook
-              </motion.button>
+                <div className="relative flex items-center my-2">
+                  <div className="grow border-t border-gray-300"></div>
+                  <span className="shrink mx-4 text-gray-500 text-sm">Or continue with</span>
+                  <div className="grow border-t border-gray-300"></div>
+                </div>
+
+                <motion.button
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
+                  className="w-full py-3 border dark:text-gray-100 dark:hover:text-black border-gray-300 rounded-xl flex items-center justify-center gap-3 hover:bg-gray-50 transition-all duration-200 font-medium"
+                  onClick={() => handleSocialLogin('Google')}
+                >
+                  <FaGoogle className="text-red-500" size={20} />
+                  Sign up with Google
+                </motion.button>
+
+                <motion.button
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
+                  className="w-full py-3 border dark:text-gray-100 dark:hover:text-black border-gray-300 rounded-xl flex items-center justify-center gap-3 hover:bg-gray-50 transition-all duration-200 font-medium"
+                  onClick={() => handleSocialLogin('Facebook')}
+                >
+                  <FaFacebook className="text-blue-600" size={20} />
+                  Sign up with Facebook
+                </motion.button>
             </motion.div>
           )}
 
