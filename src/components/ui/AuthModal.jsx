@@ -1,59 +1,81 @@
-import React, { useState } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { useAuth } from '../../context/AuthContext';
-import { 
-  FaGoogle, 
-  FaFacebook, 
-  FaEnvelope, 
-  FaUser, 
+import React, { useState } from "react";
+import { useAuth } from "../../context/AuthContext";
+import { AnimatePresence, motion } from "framer-motion";
+import {
+  FaGoogle,
+  FaFacebook,
+  FaUser,
+  FaEnvelope,
   FaLock,
   FaTimes,
-  FaExclamationCircle,
-  FaCheckCircle,
+  FaArrowLeft,
   FaPen,
-  FaCheck
-} from 'react-icons/fa';
+  FaHashtag,
+  FaExclamationCircle,
+  FaCheck,
+  FaKey
+} from "react-icons/fa";
+import { MdCheckCircle } from "react-icons/md";
 
 const AuthModal = ({ onClose, onLoginSuccess }) => {
-  const { signup, login, verifyOTP, resendOTP } = useAuth();
-
-  // UI State
-  const [isLogin, setIsLogin] = useState(true);
-  const [userType, setUserType] = useState('streamer');
-  const [currentStep, setCurrentStep] = useState('auth'); // 'auth' | 'otp'
+  const { login, signup, verifyOTP, resendOTP } = useAuth();
   
-  // Form State
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState('');
-  const [success, setSuccess] = useState('');
-
-  // Streamer Data
-  const [streamerData, setStreamerData] = useState({
-    name: ''
-  });
-
-  // Blogger Data
+  const [mode, setMode] = useState("choose");
   const [bloggerData, setBloggerData] = useState({
-    username: '',
+    username: "",
     niches: [],
+    email: "",
+    password: "",
+    termsAccepted: false,
+  });
+  
+  const [streamerData, setStreamerData] = useState({
+    name: "",
+    email: "",
+    password: "",
+    niches: "",
     agreedToTerms: false
   });
+  
+  const [loginData, setLoginData] = useState({
+    email: "",
+    password: "",
+  });
+  
+  const [otpData, setOtpData] = useState({
+    userId: "",
+    otp: "",
+  });
+  
+  const [error, setError] = useState("");
+  const [showError, setShowError] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
 
-  // OTP State
-  const [otpUserId, setOtpUserId] = useState(null);
-  const [otpEmail, setOtpEmail] = useState('');
-  const [otpCode, setOtpCode] = useState('');
-
-  // Available niches
   const availableNiches = [
-    'Technology', 'Fashion', 'Food', 'Travel', 
-    'Lifestyle', 'Health', 'Business', 'Entertainment',
-    'Sports', 'Art & Design', 'Finance', 'Education'
+    'Technology',
+    'Fashion',
+    'Food',
+    'Travel',
+    'Lifestyle',
+    'Health',
+    'Business',
+    'Entertainment',
+    'Sports',
+    'Art & Design',
+    'Finance',
+    'Education'
   ];
 
-  // Toggle niche selection
+  const displayError = (message) => {
+    setError(message);
+    setShowError(true);
+    setTimeout(() => setShowError(false), 5000);
+  };
+
+  const validateEmail = (email) => {
+    return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+  };
+
   const toggleNiche = (niche) => {
     if (bloggerData.niches.includes(niche)) {
       setBloggerData({
@@ -61,616 +83,637 @@ const AuthModal = ({ onClose, onLoginSuccess }) => {
         niches: bloggerData.niches.filter(n => n !== niche)
       });
     } else {
-      if (bloggerData.niches.length >= 3) {
-        setError('You can select a maximum of 3 niches');
-        setTimeout(() => setError(''), 3000);
-        return;
+      if (bloggerData.niches.length < 3) {
+        setBloggerData({
+          ...bloggerData,
+          niches: [...bloggerData.niches, niche]
+        });
+      } else {
+        displayError("You can only select up to 3 niches");
       }
-      setBloggerData({
-        ...bloggerData,
-        niches: [...bloggerData.niches, niche]
+    }
+  };
+
+  const handleStreamerSignup = async () => {
+    if (!streamerData.name || !streamerData.email || !streamerData.password) {
+      displayError("Please fill in all fields");
+      return;
+    }
+    
+    if (!validateEmail(streamerData.email)) {
+      displayError("Please enter a valid email address");
+      return;
+    }
+    
+    if (streamerData.password.length < 6) {
+      displayError("Password must be at least 6 characters");
+      return;
+    }
+    
+    if (!streamerData.niches) {
+      displayError("Please select a niche");
+      return;
+    }
+    
+    if (!streamerData.agreedToTerms) {
+      displayError("You must agree to terms");
+      return;
+    }
+
+    setIsLoading(true);
+    
+    try {
+      console.log('📤 Sending streamer signup:', {
+        email: streamerData.email,
+        role: "streamer",
+        name: streamerData.name,
+        niches: [streamerData.niches]
       });
+
+      const result = await signup({
+        email: streamerData.email,
+        password: streamerData.password,
+        role: "streamer",
+        name: streamerData.name,
+        username: streamerData.name.split(' ').join('').toLowerCase().replace(/[^a-zA-Z0-9]/g, ''),
+        niches: [streamerData.niches], // Array format
+        agreedToTerms: streamerData.agreedToTerms
+      });
+
+      console.log('✅ Signup result:', result);
+
+      if (result.success && result.userId) {
+        setOtpData({ userId: result.userId, otp: "" });
+        setMode("verifyOtp");
+      } else if (result.needsVerification) {
+        setOtpData({ userId: result.userId, otp: "" });
+        setMode("verifyOtp");
+      } else {
+        displayError(result.message || "Signup failed");
+      }
+    } catch (err) {
+      console.error('[AuthModal] Streamer signup error:', err);
+      const msg = err.message === "Failed to fetch"
+        ? "Network error: Could not connect to the server. Please check your internet connection."
+        : (err.message || "Signup failed");
+      displayError(msg);
+    } finally {
+      setIsLoading(false);
     }
   };
 
-  // Handle Signup
-  const handleSignup = async (e) => {
-    e.preventDefault();
-    setError('');
-    setSuccess('');
-
-    // Validation
-    if (!email || !password) {
-      setError('Please fill in all fields');
+  const handleBloggerSubmit = async () => {
+    if (!bloggerData.username || bloggerData.niches.length === 0 || !bloggerData.email || !bloggerData.password) {
+      displayError("Please fill in all fields");
+      return;
+    }
+    
+    if (!validateEmail(bloggerData.email)) {
+      displayError("Please enter a valid email address");
+      return;
+    }
+    
+    if (bloggerData.password.length < 6) {
+      displayError("Password must be at least 6 characters");
+      return;
+    }
+    
+    if (!bloggerData.termsAccepted) {
+      displayError("You must agree to the terms and conditions");
       return;
     }
 
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(email)) {
-      setError('Please enter a valid email address');
-      return;
-    }
-
-    if (password.length < 6) {
-      setError('Password must be at least 6 characters');
-      return;
-    }
-
-    // Role-specific validation
-    if (userType === 'streamer' && !streamerData.name.trim()) {
-      setError('Please enter your name');
-      return;
-    }
-
-    if (userType === 'blogger') {
-      if (!bloggerData.username.trim()) {
-        setError('Please enter a username');
-        return;
-      }
-      if (bloggerData.niches.length === 0) {
-        setError('Please select at least one niche');
-        return;
-      }
-      if (!bloggerData.agreedToTerms) {
-        setError('Please agree to the terms and conditions');
-        return;
-      }
-    }
-
-    setLoading(true);
-
+    setIsLoading(true);
+    
     try {
-      // Prepare signup data matching backend expectations
-      const signupData = {
-        email,
-        password,
-        role: userType,
-        name: userType === 'streamer' ? streamerData.name : (bloggerData.username || ''),
-        username: userType === 'blogger' ? bloggerData.username : '',
-        niches: userType === 'blogger' ? bloggerData.niches : [],
-        agreedToTerms: true
-      };
+      console.log('📤 Sending blogger signup:', {
+        username: bloggerData.username,
+        niches: bloggerData.niches,
+        email: bloggerData.email,
+        role: "blogger"
+      });
 
-      console.log('📤 Sending signup request:', signupData);
+      const result = await signup({
+        username: bloggerData.username,
+        name: bloggerData.username,
+        niches: bloggerData.niches,
+        email: bloggerData.email,
+        password: bloggerData.password,
+        role: "blogger",
+        agreedToTerms: bloggerData.termsAccepted
+      });
 
-      const result = await signup(signupData);
+      console.log('✅ Signup result:', result);
+
+      if (result.success && result.userId) {
+        setOtpData({ userId: result.userId, otp: "" });
+        setMode("verifyOtp");
+      } else if (result.needsVerification) {
+        setOtpData({ userId: result.userId, otp: "" });
+        setMode("verifyOtp");
+      } else {
+        displayError(result.message || "Signup failed");
+      }
+    } catch (err) {
+      console.error('[AuthModal] Blogger signup error:', err);
+      const msg = err.message === "Failed to fetch"
+        ? "Network error: Connection to server lost. Please check your internet."
+        : (err.message || "Signup failed");
+      displayError(msg);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleLogin = async () => {
+    if (!loginData.email || !loginData.password) {
+      displayError("Please fill in all fields");
+      return;
+    }
+    
+    if (!validateEmail(loginData.email)) {
+      displayError("Please enter a valid email address");
+      return;
+    }
+
+    setIsLoading(true);
+    
+    try {
+      console.log('📤 Logging in:', loginData.email);
+
+      const result = await login(loginData.email, loginData.password);
+
+      console.log('✅ Login result:', result);
+
+      if (result.needsVerification) {
+        setOtpData({ userId: result.userId, otp: "" });
+        setMode("verifyOtp");
+      } else if (result.success) {
+        onLoginSuccess();
+        onClose();
+      } else {
+        displayError(result.message || "Login failed");
+      }
+    } catch (err) {
+      console.error('[AuthModal] Login error:', err);
+      const msg = err.message === "Failed to fetch"
+        ? "Network error: Check your internet connection."
+        : (err.message || "Login failed");
+      displayError(msg);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleVerifyOtp = async () => {
+    if (!otpData.otp || otpData.otp.length < 4) {
+      displayError("Please enter the OTP sent to your email");
+      return;
+    }
+
+    setIsLoading(true);
+    
+    try {
+      console.log('📤 Verifying OTP for user:', otpData.userId);
+
+      const result = await verifyOTP(otpData.userId, otpData.otp);
+
+      console.log('✅ OTP verification result:', result);
+
+      if (result.success) {
+        onLoginSuccess();
+        onClose();
+      } else {
+        displayError(result.message || "Verification failed");
+      }
+    } catch (err) {
+      console.error('[AuthModal] OTP verification error:', err);
+      displayError(
+        err.message === "Failed to fetch" 
+          ? "Network error" 
+          : (err.message || "Verification failed")
+      );
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleResendOtp = async () => {
+    setIsLoading(true);
+    
+    try {
+      console.log('📤 Resending OTP for user:', otpData.userId);
+
+      await resendOTP(otpData.userId);
       
-      setLoading(false);
-
-      if (result.success) {
-        setOtpUserId(result.userId);
-        setOtpEmail(result.email || email);
-        setCurrentStep('otp');
-        setSuccess('OTP sent to your email!');
-      } else {
-        if (result.errorCode === 'EMAIL_EXISTS') {
-          setError('This email is already registered. Please login instead.');
-          setTimeout(() => {
-            setIsLogin(true);
-            setError('');
-          }, 2500);
-        } else if (result.errorCode === 'USERNAME_EXISTS') {
-          setError('This username is already taken. Please choose another.');
-        } else {
-          setError(result.message || 'Signup failed. Please try again.');
-        }
-      }
+      displayError("OTP resent successfully!");
     } catch (err) {
-      setLoading(false);
-      console.error('❌ Signup error:', err);
-      setError('Network error. Please check your connection and try again.');
+      console.error('[AuthModal] Resend OTP error:', err);
+      displayError(err.message || "Failed to resend OTP");
+    } finally {
+      setIsLoading(false);
     }
-  };
-
-  // Handle Login
-  const handleLogin = async (e) => {
-    e.preventDefault();
-    setError('');
-    setSuccess('');
-
-    if (!email || !password) {
-      setError('Please enter email and password');
-      return;
-    }
-
-    setLoading(true);
-    
-    try {
-      const result = await login(email, password);
-      setLoading(false);
-
-      if (result.success) {
-        setSuccess('Login successful!');
-        setTimeout(() => {
-          onLoginSuccess();
-        }, 500);
-      } else {
-        if (result.needsVerification) {
-          // Automatically reopen OTP modal
-          setOtpUserId(result.userId);
-          setOtpEmail(result.email || email);
-          setCurrentStep('otp');
-          setError('');
-          setSuccess('Please verify your email. OTP has been resent.');
-        } else {
-          setError(result.message || 'Login failed. Please try again.');
-        }
-      }
-    } catch (err) {
-      setLoading(false);
-      console.error('❌ Login error:', err);
-      setError('Network error. Please check your connection and try again.');
-    }
-  };
-
-  // Handle OTP Verification
-  const handleVerifyOTP = async (e) => {
-    e.preventDefault();
-    setError('');
-    setSuccess('');
-
-    if (otpCode.length !== 6) {
-      setError('Please enter the 6-digit code');
-      return;
-    }
-
-    setLoading(true);
-    
-    try {
-      const result = await verifyOTP(otpUserId, otpCode);
-      setLoading(false);
-
-      if (result.success) {
-        setSuccess('Email verified successfully!');
-        setTimeout(() => {
-          onLoginSuccess();
-        }, 500);
-      } else {
-        if (result.errorCode === 'INVALID_OTP') {
-          setError('Invalid OTP code. Please check and try again.');
-        } else if (result.errorCode === 'OTP_EXPIRED') {
-          setError('OTP has expired. Please request a new one.');
-        } else {
-          setError(result.message || 'Verification failed. Please try again.');
-        }
-      }
-    } catch (err) {
-      setLoading(false);
-      console.error('❌ OTP verification error:', err);
-      setError('Network error. Please check your connection and try again.');
-    }
-  };
-
-  // Handle Resend OTP
-  const handleResendOTP = async () => {
-    setError('');
-    setSuccess('');
-    setLoading(true);
-
-    try {
-      const result = await resendOTP(otpUserId);
-      setLoading(false);
-
-      if (result.success) {
-        setSuccess('New OTP sent to your email!');
-        setTimeout(() => setSuccess(''), 3000);
-      } else {
-        setError(result.message || 'Failed to resend OTP. Please try again.');
-      }
-    } catch (err) {
-      setLoading(false);
-      console.error('❌ Resend OTP error:', err);
-      setError('Network error. Please check your connection and try again.');
-    }
-  };
-
-  // Reset to main auth screen
-  const resetToAuth = () => {
-    setCurrentStep('auth');
-    setError('');
-    setSuccess('');
-    setOtpCode('');
-  };
-
-  // Animations
-  const backdropVariants = {
-    hidden: { opacity: 0 },
-    visible: { opacity: 1 }
   };
 
   const modalVariants = {
     hidden: { opacity: 0, scale: 0.8, y: 50 },
-    visible: { 
-      opacity: 1, 
-      scale: 1, 
+    visible: {
+      opacity: 1,
+      scale: 1,
       y: 0,
-      transition: { type: 'spring', damping: 25, stiffness: 300 }
+      transition: { type: "spring", damping: 25, stiffness: 300 }
     },
-    exit: { opacity: 0, scale: 0.8, y: 50 }
+    exit: { opacity: 0, scale: 0.8, y: 50, transition: { duration: 0.2 } }
+  };
+
+  const contentVariants = {
+    hidden: { opacity: 0, x: -20 },
+    visible: { opacity: 1, x: 0, transition: { duration: 0.3 } },
+    exit: { opacity: 0, x: 20, transition: { duration: 0.2 } }
   };
 
   return (
-    <AnimatePresence>
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      className="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-50 p-4"
+      onClick={onClose}
+    >
       <motion.div
-        variants={backdropVariants}
+        variants={modalVariants}
         initial="hidden"
         animate="visible"
-        exit="hidden"
-        className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4 overflow-y-auto"
-        onClick={onClose}
+        exit="exit"
+        className="bg-white dark:bg-gray-950 w-full max-w-lg rounded-2xl shadow-2xl p-8 relative max-h-[90vh] overflow-y-auto"
+        onClick={(e) => e.stopPropagation()}
       >
-        <motion.div
-          variants={modalVariants}
-          initial="hidden"
-          animate="visible"
-          exit="exit"
-          className="bg-white rounded-2xl shadow-2xl max-w-md w-full my-8 relative"
-          onClick={(e) => e.stopPropagation()}
+        <motion.button
+          whileHover={{ scale: 1.1, rotate: 90 }}
+          whileTap={{ scale: 0.9 }}
+          className="absolute top-4 right-4 text-gray-400 hover:text-gray-600 transition-colors"
+          onClick={onClose}
         >
-          {/* Close Button */}
-          <button
-            onClick={onClose}
-            className="absolute top-4 right-4 text-gray-400 hover:text-gray-600 transition-colors z-10"
-          >
-            <FaTimes size={24} />
-          </button>
+          <FaTimes size={24} />
+        </motion.button>
 
-          {/* MAIN AUTH SCREEN */}
-          {currentStep === 'auth' && (
-            <div className="p-8">
-              {/* Header */}
-              <div className="text-center mb-8">
-                <h2 className="text-3xl font-bold text-gray-900 mb-2">
-                  {isLogin ? 'Welcome Back!' : 'Join LUMEBLOG'}
-                </h2>
-                <p className="text-gray-600">
-                  {isLogin 
-                    ? 'Login to continue your journey' 
-                    : 'Create an account to get started'}
-                </p>
-              </div>
+        <AnimatePresence>
+          {showError && (
+            <motion.div
+              initial={{ opacity: 0, y: -10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -10 }}
+              className="mb-4 p-4 bg-red-50 border border-red-200 rounded-xl flex items-start gap-3"
+            >
+              <FaExclamationCircle className="text-red-600 mt-0.5 shrink-0" size={20} />
+              <p className="text-red-800 text-sm font-medium">{error}</p>
+            </motion.div>
+          )}
+        </AnimatePresence>
 
-              {/* Error Message */}
-              <AnimatePresence>
-                {error && (
-                  <motion.div
-                    initial={{ opacity: 0, y: -10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: -10 }}
-                    className="mb-4 p-3 bg-red-50 border border-red-200 rounded-xl flex items-start gap-2"
-                  >
-                    <FaExclamationCircle className="text-red-600 mt-0.5 flex-shrink-0" />
-                    <p className="text-red-800 text-sm">{error}</p>
-                  </motion.div>
-                )}
-              </AnimatePresence>
+        <motion.h2
+          key={mode}
+          className="text-2xl font-bold text-center mb-6 text-gray-900 dark:text-gray-100"
+        >
+          {mode === "choose" && "Join Nook"}
+          {mode === "streamer" && "Create Your Streamer Account"}
+          {mode === "bloggerStep1" && "Blogger Registration – Step 1"}
+          {mode === "bloggerStep2" && "Blogger Registration – Step 2"}
+          {mode === "login" && "Welcome Back"}
+          {mode === "verifyOtp" && "Verify Your Email"}
+        </motion.h2>
 
-              {/* Success Message */}
-              <AnimatePresence>
-                {success && (
-                  <motion.div
-                    initial={{ opacity: 0, y: -10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: -10 }}
-                    className="mb-4 p-3 bg-green-50 border border-green-200 rounded-xl flex items-start gap-2"
-                  >
-                    <FaCheckCircle className="text-green-600 mt-0.5 flex-shrink-0" />
-                    <p className="text-green-800 text-sm">{success}</p>
-                  </motion.div>
-                )}
-              </AnimatePresence>
+        <AnimatePresence mode="wait">
+          {/* CHOOSE MODE */}
+          {mode === "choose" && (
+            <motion.div key="choose" variants={contentVariants} className="flex flex-col gap-4">
+              <motion.button
+                whileHover={{ scale: 1.02 }}
+                onClick={() => setMode("streamer")}
+                className="w-full dark:bg-gray-900 py-4 border-2 hover:border-green-600 border-gray-700 text-green-700 font-semibold rounded-xl hover:bg-green-200 transition-all flex items-center justify-center gap-3"
+              >
+                <FaUser size={20} /> I am a Streamer
+              </motion.button>
 
-              {/* User Type Selection (Signup Only) */}
-              {!isLogin && (
-                <div className="mb-6">
-                  <p className="text-sm text-gray-600 mb-3 font-medium">I want to join as:</p>
-                  <div className="grid grid-cols-2 gap-3">
-                    <motion.button
-                      type="button"
-                      whileHover={{ scale: 1.02 }}
-                      whileTap={{ scale: 0.98 }}
-                      onClick={() => setUserType('streamer')}
-                      className={`py-3 px-4 rounded-xl font-semibold transition-all ${
-                        userType === 'streamer'
-                          ? 'bg-gradient-to-r from-green-600 to-emerald-600 text-white shadow-lg'
-                          : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                      }`}
-                    >
-                      📚 Reader
-                    </motion.button>
-                    <motion.button
-                      type="button"
-                      whileHover={{ scale: 1.02 }}
-                      whileTap={{ scale: 0.98 }}
-                      onClick={() => setUserType('blogger')}
-                      className={`py-3 px-4 rounded-xl font-semibold transition-all ${
-                        userType === 'blogger'
-                          ? 'bg-gradient-to-r from-green-600 to-emerald-600 text-white shadow-lg'
-                          : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                      }`}
-                    >
-                      <FaPen className="inline mr-2" size={14} />
-                      Blogger
-                    </motion.button>
-                  </div>
-                </div>
-              )}
+              <motion.button
+                whileHover={{ scale: 1.02 }}
+                onClick={() => setMode("bloggerStep1")}
+                className="w-full py-4 bg-green-600 text-white font-semibold rounded-xl hover:bg-green-700 transition-all shadow-lg flex items-center justify-center gap-3"
+              >
+                <FaPen size={20} /> I am a Blogger
+              </motion.button>
 
-              {/* Auth Form */}
-              <form onSubmit={isLogin ? handleLogin : handleSignup}>
-                
-                {/* Streamer Name (Signup Only) */}
-                {!isLogin && userType === 'streamer' && (
-                  <div className="mb-4">
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Full Name
-                    </label>
-                    <div className="relative">
-                      <FaUser className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" />
-                      <input
-                        type="text"
-                        value={streamerData.name}
-                        onChange={(e) => setStreamerData({ ...streamerData, name: e.target.value })}
-                        placeholder="Enter your name"
-                        className="w-full pl-12 pr-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all"
-                      />
-                    </div>
-                  </div>
-                )}
-
-                {/* Blogger Username (Signup Only) */}
-                {!isLogin && userType === 'blogger' && (
-                  <div className="mb-4">
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Username
-                    </label>
-                    <div className="relative">
-                      <FaUser className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" />
-                      <input
-                        type="text"
-                        value={bloggerData.username}
-                        onChange={(e) => setBloggerData({ ...bloggerData, username: e.target.value })}
-                        placeholder="Choose a username"
-                        className="w-full pl-12 pr-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all"
-                      />
-                    </div>
-                  </div>
-                )}
-
-                {/* Email */}
-                <div className="mb-4">
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Email Address
-                  </label>
-                  <div className="relative">
-                    <FaEnvelope className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" />
-                    <input
-                      type="email"
-                      value={email}
-                      onChange={(e) => setEmail(e.target.value)}
-                      placeholder="Enter your email"
-                      className="w-full pl-12 pr-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all"
-                    />
-                  </div>
-                </div>
-
-                {/* Password */}
-                <div className="mb-6">
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Password
-                  </label>
-                  <div className="relative">
-                    <FaLock className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" />
-                    <input
-                      type="password"
-                      value={password}
-                      onChange={(e) => setPassword(e.target.value)}
-                      placeholder="Enter your password"
-                      className="w-full pl-12 pr-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all"
-                    />
-                  </div>
-                  {!isLogin && (
-                    <p className="text-xs text-gray-500 mt-1">Minimum 6 characters</p>
-                  )}
-                </div>
-
-                {/* Blogger Niches (Signup Only) */}
-                {!isLogin && userType === 'blogger' && (
-                  <div className="mb-6">
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Select Your Niches (1-3)
-                      <span className="ml-2 text-green-600 text-xs font-bold">
-                        Selected: {bloggerData.niches.length}/3
-                      </span>
-                    </label>
-                    <div className="grid grid-cols-2 gap-2 max-h-48 overflow-y-auto p-2 border border-gray-200 rounded-xl bg-gray-50">
-                      {availableNiches.map((niche) => {
-                        const isSelected = bloggerData.niches.includes(niche);
-                        return (
-                          <motion.button
-                            key={niche}
-                            type="button"
-                            whileHover={{ scale: 1.02 }}
-                            whileTap={{ scale: 0.98 }}
-                            onClick={() => toggleNiche(niche)}
-                            className={`relative py-2 px-3 rounded-lg text-sm font-medium transition-all ${
-                              isSelected
-                                ? 'bg-green-100 text-green-700 border-2 border-green-500 shadow-sm'
-                                : 'bg-white text-gray-700 border border-gray-300 hover:bg-gray-100'
-                            }`}
-                          >
-                            {niche}
-                            {isSelected && (
-                              <motion.span
-                                initial={{ scale: 0 }}
-                                animate={{ scale: 1 }}
-                                className="absolute -top-1 -right-1 w-5 h-5 bg-green-600 text-white rounded-full flex items-center justify-center text-xs shadow-md"
-                              >
-                                <FaCheck size={10} />
-                              </motion.span>
-                            )}
-                          </motion.button>
-                        );
-                      })}
-                    </div>
-                  </div>
-                )}
-
-                {/* Blogger Terms (Signup Only) */}
-                {!isLogin && userType === 'blogger' && (
-                  <div className="mb-6">
-                    <label className="flex items-start gap-2 cursor-pointer">
-                      <input
-                        type="checkbox"
-                        checked={bloggerData.agreedToTerms}
-                        onChange={(e) => setBloggerData({ ...bloggerData, agreedToTerms: e.target.checked })}
-                        className="mt-1 w-4 h-4 text-green-600 border-gray-300 rounded focus:ring-green-500"
-                      />
-                      <span className="text-sm text-gray-600">
-                        I agree to the{' '}
-                        <a href="#" className="text-green-600 hover:underline font-medium">
-                          Terms and Conditions
-                        </a>
-                      </span>
-                    </label>
-                  </div>
-                )}
-
-                {/* Submit Button */}
-                <motion.button
-                  type="submit"
-                  disabled={loading}
-                  whileHover={{ scale: loading ? 1 : 1.02 }}
-                  whileTap={{ scale: loading ? 1 : 0.98 }}
-                  className="w-full py-3 bg-gradient-to-r from-green-600 to-emerald-600 text-white rounded-xl font-semibold hover:from-green-700 hover:to-emerald-700 transition-all shadow-lg disabled:from-gray-400 disabled:to-gray-400 disabled:cursor-not-allowed"
-                >
-                  {loading ? (
-                    <div className="flex items-center justify-center gap-2">
-                      <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                      {isLogin ? 'Logging in...' : 'Creating account...'}
-                    </div>
-                  ) : (
-                    isLogin ? 'Login' : 'Create Account'
-                  )}
-                </motion.button>
-              </form>
-
-              {/* Toggle Login/Signup */}
-              <div className="mt-6 text-center">
-                <p className="text-gray-600">
-                  {isLogin ? "Don't have an account? " : "Already have an account? "}
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setIsLogin(!isLogin);
-                      setError('');
-                      setSuccess('');
-                    }}
-                    className="text-green-600 font-semibold hover:underline"
-                  >
-                    {isLogin ? 'Sign up' : 'Login'}
-                  </button>
-                </p>
-              </div>
-            </div>
+              <button
+                onClick={() => setMode("login")}
+                className="text-sm text-gray-600 mt-2 hover:text-green-600"
+              >
+                Already have an account? <span className="font-semibold">Login</span>
+              </button>
+            </motion.div>
           )}
 
-          {/* OTP VERIFICATION SCREEN */}
-          {currentStep === 'otp' && (
-            <div className="p-8">
-              {/* Back Button */}
+          {/* STREAMER SIGNUP */}
+          {mode === "streamer" && (
+            <motion.div key="streamer" variants={contentVariants} className="flex flex-col gap-5">
               <button
-                onClick={resetToAuth}
-                className="mb-4 text-gray-600 hover:text-gray-800 flex items-center gap-2 font-medium"
+                onClick={() => setMode("choose")}
+                className="text-sm text-gray-600 flex items-center gap-2"
               >
-                ← Back
+                <FaArrowLeft /> Back
               </button>
 
-              <div className="text-center mb-6">
-                <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                  <FaEnvelope className="text-green-600" size={32} />
-                </div>
-                <h3 className="text-2xl font-bold text-gray-900 mb-2">
-                  Verify Your Email
-                </h3>
-                <p className="text-gray-600">
-                  We've sent a 6-digit code to
-                </p>
-                <p className="text-green-600 font-semibold">{otpEmail}</p>
-              </div>
-
-              {/* Error/Success Messages */}
-              <AnimatePresence>
-                {error && (
-                  <motion.div
-                    initial={{ opacity: 0, y: -10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: -10 }}
-                    className="mb-4 p-3 bg-red-50 border border-red-200 rounded-xl flex items-start gap-2"
-                  >
-                    <FaExclamationCircle className="text-red-600 mt-0.5 flex-shrink-0" />
-                    <p className="text-red-800 text-sm">{error}</p>
-                  </motion.div>
-                )}
-                {success && (
-                  <motion.div
-                    initial={{ opacity: 0, y: -10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: -10 }}
-                    className="mb-4 p-3 bg-green-50 border border-green-200 rounded-xl flex items-start gap-2"
-                  >
-                    <FaCheckCircle className="text-green-600 mt-0.5 flex-shrink-0" />
-                    <p className="text-green-800 text-sm">{success}</p>
-                  </motion.div>
-                )}
-              </AnimatePresence>
-
-              <form onSubmit={handleVerifyOTP}>
+              <div className="relative">
+                <FaUser className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" />
                 <input
                   type="text"
-                  maxLength="6"
-                  value={otpCode}
-                  onChange={(e) => setOtpCode(e.target.value.replace(/\D/g, ''))}
-                  placeholder="000000"
-                  className="w-full px-4 py-4 border-2 border-gray-300 rounded-xl mb-4 text-center text-3xl tracking-[0.5em] font-bold focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all"
-                  autoFocus
+                  placeholder="Full Name"
+                  className="w-full border dark:text-gray-100 border-gray-300 rounded-xl pl-12 pr-4 py-3 focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all"
+                  value={streamerData.name}
+                  onChange={(e) => setStreamerData({ ...streamerData, name: e.target.value })}
                 />
+              </div>
 
-                <motion.button
-                  type="submit"
-                  disabled={loading || otpCode.length !== 6}
-                  whileHover={{ scale: loading ? 1 : 1.02 }}
-                  whileTap={{ scale: loading ? 1 : 0.98 }}
-                  className="w-full py-3 bg-gradient-to-r from-green-600 to-emerald-600 text-white rounded-xl font-semibold hover:from-green-700 hover:to-emerald-700 transition-all shadow-lg disabled:from-gray-400 disabled:to-gray-400 disabled:cursor-not-allowed mb-4"
-                >
-                  {loading ? (
-                    <div className="flex items-center justify-center gap-2">
-                      <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                      Verifying...
-                    </div>
-                  ) : (
-                    'Verify Email'
-                  )}
-                </motion.button>
+              <div className="relative">
+                <FaEnvelope className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" />
+                <input
+                  type="email"
+                  placeholder="Email Address"
+                  className="w-full border dark:text-gray-100 border-gray-300 rounded-xl pl-12 pr-4 py-3 focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all"
+                  value={streamerData.email}
+                  onChange={(e) => setStreamerData({ ...streamerData, email: e.target.value })}
+                />
+              </div>
 
-                <button
-                  type="button"
-                  onClick={handleResendOTP}
-                  disabled={loading}
-                  className="w-full text-green-600 hover:text-green-700 font-medium hover:underline disabled:text-gray-400 disabled:no-underline"
-                >
-                  {loading ? 'Sending...' : 'Resend OTP'}
-                </button>
-              </form>
+              <div className="relative">
+                <FaLock className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" />
+                <input
+                  type="password"
+                  placeholder="Password (min. 6 characters)"
+                  className="w-full border dark:text-gray-100 border-gray-300 rounded-xl pl-12 pr-4 py-3 focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all"
+                  value={streamerData.password}
+                  onChange={(e) => setStreamerData({ ...streamerData, password: e.target.value })}
+                />
+              </div>
 
-              <p className="text-xs text-gray-500 text-center mt-4">
-                Code expires in 10 minutes
-              </p>
-            </div>
+              {/* Streamer Niche Grid */}
+              <div className="space-y-3">
+                <label className="text-sm font-medium text-gray-700 dark:text-gray-100 flex items-center gap-2">
+                  <FaHashtag /> Select Your Primary Niche
+                </label>
+                <div className="grid grid-cols-2 gap-2 max-h-40 overflow-y-auto pr-1">
+                  {['Technology', 'Fashion', 'Food', 'Travel', 'Lifestyle', 'Health', 'Business'].map((niche) => (
+                    <button
+                      key={niche}
+                      type="button"
+                      onClick={() => setStreamerData({ ...streamerData, niches: niche })}
+                      className={`p-2 rounded-lg border text-sm transition-all text-center ${
+                        streamerData.niches === niche
+                          ? 'border-green-600 bg-green-50 text-green-700 font-bold'
+                          : 'border-gray-200 dark:border-gray-700 dark:text-gray-300 hover:border-green-400'
+                      }`}
+                    >
+                      {niche}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              <label className="flex items-start gap-3 p-3 bg-gray-50 dark:bg-gray-900 rounded-xl cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={streamerData.agreedToTerms}
+                  onChange={(e) => setStreamerData({ ...streamerData, agreedToTerms: e.target.checked })}
+                  className="mt-1 w-5 h-5 rounded text-green-600"
+                />
+                <span className="text-sm text-gray-700 dark:text-gray-300">
+                  I agree to Terms & Conditions
+                </span>
+              </label>
+
+              <motion.button
+                whileHover={{ scale: 1.02 }}
+                onClick={handleStreamerSignup}
+                className="w-full py-3 bg-gradient-to-r from-green-600 to-emerald-600 text-white font-semibold rounded-xl hover:from-green-700 hover:to-emerald-700 shadow-lg disabled:from-gray-400 disabled:to-gray-400 disabled:cursor-not-allowed flex items-center justify-center"
+                disabled={!streamerData.name || !streamerData.email || !streamerData.password || !streamerData.niches || !streamerData.agreedToTerms || isLoading}
+              >
+                {isLoading ? (
+                  <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                ) : (
+                  "Create Streamer Account"
+                )}
+              </motion.button>
+            </motion.div>
           )}
-        </motion.div>
+
+          {/* BLOGGER STEP 1 */}
+          {mode === "bloggerStep1" && (
+            <motion.div key="bloggerStep1" variants={contentVariants} className="flex flex-col gap-4">
+              <button
+                onClick={() => setMode("choose")}
+                className="text-sm text-gray-600 flex items-center gap-2"
+              >
+                <FaArrowLeft /> Back
+              </button>
+
+              <div className="relative">
+                <FaUser className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" />
+                <input
+                  type="text"
+                  placeholder="Choose a Username"
+                  className="w-full border dark:text-gray-100 border-gray-300 rounded-xl pl-12 pr-4 py-3 focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all"
+                  value={bloggerData.username}
+                  onChange={(e) => setBloggerData({ ...bloggerData, username: e.target.value })}
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium dark:text-gray-100 mb-3">
+                  <FaHashtag className="inline mr-2" />
+                  Select Niches (Up to 3)
+                </label>
+                <div className="grid grid-cols-2 gap-3 max-h-56 overflow-y-auto pr-2">
+                  {availableNiches.map((niche) => {
+                    const isSelected = bloggerData.niches.includes(niche);
+                    return (
+                      <button
+                        key={niche}
+                        type="button"
+                        onClick={() => toggleNiche(niche)}
+                        className={`p-3 rounded-xl border-2 text-sm transition-all ${
+                          isSelected
+                            ? 'border-green-600 bg-green-50 text-green-700 font-bold'
+                            : 'bg-white dark:bg-gray-900 dark:border-gray-700 text-gray-700 dark:text-gray-300 hover:border-green-400'
+                        }`}
+                      >
+                        {niche}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+
+              <motion.button
+                onClick={() => setMode("bloggerStep2")}
+                disabled={!bloggerData.username || bloggerData.niches.length === 0}
+                className="w-full py-3 bg-green-600 text-white font-semibold rounded-xl disabled:bg-gray-400 hover:bg-green-700 transition-all"
+              >
+                Next
+              </motion.button>
+            </motion.div>
+          )}
+
+          {/* BLOGGER STEP 2 */}
+          {mode === "bloggerStep2" && (
+            <motion.div key="bloggerStep2" variants={contentVariants} className="flex flex-col gap-4">
+              <button
+                onClick={() => setMode("bloggerStep1")}
+                className="text-sm text-gray-600 flex items-center gap-2"
+              >
+                <FaArrowLeft /> Back
+              </button>
+
+              <div className="relative">
+                <FaEnvelope className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" />
+                <input
+                  type="email"
+                  placeholder="Email Address"
+                  className="w-full border dark:text-gray-100 border-gray-300 rounded-xl pl-12 pr-4 py-3 focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all"
+                  value={bloggerData.email}
+                  onChange={(e) => setBloggerData({ ...bloggerData, email: e.target.value })}
+                />
+              </div>
+
+              <div className="relative">
+                <FaLock className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" />
+                <input
+                  type="password"
+                  placeholder="Password (min. 6 characters)"
+                  className="w-full border dark:text-gray-100 border-gray-300 rounded-xl pl-12 pr-4 py-3 focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all"
+                  value={bloggerData.password}
+                  onChange={(e) => setBloggerData({ ...bloggerData, password: e.target.value })}
+                />
+              </div>
+
+              <div className="bg-green-50 dark:bg-green-900/20 p-4 rounded-xl text-sm text-green-800 dark:text-green-300">
+                <label className="flex items-start gap-3 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={bloggerData.termsAccepted}
+                    onChange={(e) => setBloggerData({ ...bloggerData, termsAccepted: e.target.checked })}
+                    className="mt-1 w-5 h-5 rounded text-green-600"
+                  />
+                  <span>
+                    <b>Blogger Agreement:</b> By joining, you agree to support the platform by interacting with one ad per session.
+                  </span>
+                </label>
+              </div>
+
+              <motion.button
+                onClick={handleBloggerSubmit}
+                disabled={!bloggerData.email || !bloggerData.password || !bloggerData.termsAccepted || isLoading}
+                className="w-full py-3 bg-gradient-to-r from-green-600 to-emerald-600 text-white font-semibold rounded-xl hover:from-green-700 hover:to-emerald-700 disabled:from-gray-400 disabled:to-gray-400 disabled:cursor-not-allowed flex items-center justify-center shadow-lg"
+              >
+                {isLoading ? (
+                  <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                ) : (
+                  "Create Blogger Account"
+                )}
+              </motion.button>
+            </motion.div>
+          )}
+
+          {/* LOGIN */}
+          {mode === "login" && (
+            <motion.div key="login" variants={contentVariants} className="flex flex-col gap-4">
+              <button
+                onClick={() => setMode("choose")}
+                className="text-sm text-gray-600 flex items-center gap-2"
+              >
+                <FaArrowLeft /> Back
+              </button>
+
+              <div className="relative">
+                <FaEnvelope className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" />
+                <input
+                  type="email"
+                  placeholder="Email"
+                  className="w-full border dark:text-gray-100 border-gray-300 rounded-xl pl-12 pr-4 py-3 focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all"
+                  value={loginData.email}
+                  onChange={(e) => setLoginData({ ...loginData, email: e.target.value })}
+                />
+              </div>
+
+              <div className="relative">
+                <FaLock className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" />
+                <input
+                  type="password"
+                  placeholder="Password"
+                  className="w-full border dark:text-gray-100 border-gray-300 rounded-xl pl-12 pr-4 py-3 focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all"
+                  value={loginData.password}
+                  onChange={(e) => setLoginData({ ...loginData, password: e.target.value })}
+                />
+              </div>
+
+              <motion.button
+                onClick={handleLogin}
+                disabled={!loginData.email || !loginData.password || isLoading}
+                className="w-full py-3 bg-gradient-to-r from-green-600 to-emerald-600 text-white font-semibold rounded-xl hover:from-green-700 hover:to-emerald-700 disabled:from-gray-400 disabled:to-gray-400 disabled:cursor-not-allowed flex items-center justify-center shadow-lg"
+              >
+                {isLoading ? (
+                  <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                ) : (
+                  "Login"
+                )}
+              </motion.button>
+            </motion.div>
+          )}
+
+          {/* VERIFY OTP */}
+          {mode === "verifyOtp" && (
+            <motion.div key="verifyOtp" variants={contentVariants} className="flex flex-col gap-4">
+              <div className="text-center">
+                <div className="w-16 h-16 bg-green-100 dark:bg-green-900/30 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <FaKey className="text-green-600 text-3xl" />
+                </div>
+                <p className="text-sm text-gray-600 dark:text-gray-400">
+                  Enter the verification code sent to your email.
+                </p>
+              </div>
+
+              <input
+                type="text"
+                placeholder="Enter OTP"
+                className="w-full border dark:text-gray-100 border-gray-300 rounded-xl p-3 text-center text-2xl tracking-widest focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all"
+                value={otpData.otp}
+                onChange={(e) => setOtpData({ ...otpData, otp: e.target.value.replace(/\D/g, '').slice(0, 6) })}
+                maxLength={6}
+                autoFocus
+              />
+
+              <motion.button
+                onClick={handleVerifyOtp}
+                disabled={otpData.otp.length < 4 || isLoading}
+                className="w-full py-3 bg-gradient-to-r from-green-600 to-emerald-600 text-white font-semibold rounded-xl hover:from-green-700 hover:to-emerald-700 disabled:from-gray-400 disabled:to-gray-400 disabled:cursor-not-allowed flex items-center justify-center shadow-lg"
+              >
+                {isLoading ? (
+                  <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                ) : (
+                  "Verify OTP"
+                )}
+              </motion.button>
+
+              <button
+                onClick={handleResendOtp}
+                disabled={isLoading}
+                className="text-green-600 text-sm font-semibold hover:text-green-700 disabled:text-gray-400"
+              >
+                {isLoading ? "Sending..." : "Resend Code"}
+              </button>
+            </motion.div>
+          )}
+        </AnimatePresence>
       </motion.div>
-    </AnimatePresence>
+    </motion.div>
   );
 };
 
