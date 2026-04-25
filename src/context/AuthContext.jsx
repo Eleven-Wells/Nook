@@ -11,9 +11,10 @@ export const AuthProvider = ({ children }) => {
 
     const fetchProfile = useCallback(async (token) => {
         try {
+            // FIX: Set token BEFORE calling the API so the headers are included
+            setAuthToken(token); 
             const data = await apiClient.get(PROFILE_ENDPOINTS.get);
             setUser(data.user || data);
-            setAuthToken(token);
         } catch (err) {
             console.error('Failed to fetch profile:', err);
             clearAuthToken();
@@ -60,7 +61,8 @@ export const AuthProvider = ({ children }) => {
             console.log('[AuthContext] signup response:', data);
             
             if (data.success && data.otpSent) {
-                return { needsVerification: true, userId: data.userId };
+                // FIX: Added success: true so AuthModal knows to proceed to OTP mode
+                return { success: true, needsVerification: true, userId: data.userId };
             }
             
             if (data.success) {
