@@ -18,7 +18,8 @@ import {
 import { MdCheckCircle } from "react-icons/md";
 
 const AuthModal = ({ onClose, onLoginSuccess }) => {
-  const { login, signup, verifyOTP, resendOTP } = useAuth();
+  // FIX: Destructure as verifyOtp and resendOtp (lowercase 'p')
+  const { login, signup, verifyOtp, resendOtp } = useAuth();
   
   const [mode, setMode] = useState("choose");
   const [bloggerData, setBloggerData] = useState({
@@ -123,38 +124,29 @@ const AuthModal = ({ onClose, onLoginSuccess }) => {
     setIsLoading(true);
     
     try {
-      console.log('📤 Sending streamer signup:', {
-        email: streamerData.email,
-        role: "streamer",
-        name: streamerData.name,
-        niches: [streamerData.niches]
-      });
-
       const result = await signup({
         email: streamerData.email,
         password: streamerData.password,
         role: "streamer",
         name: streamerData.name,
         username: streamerData.name.split(' ').join('').toLowerCase().replace(/[^a-zA-Z0-9]/g, ''),
-        niches: [streamerData.niches], // Array format
+        niches: [streamerData.niches],
         agreedToTerms: streamerData.agreedToTerms
       });
 
-      console.log('✅ Signup result:', result);
-
-      if (result.success && result.userId) {
+      if (result.success && result.needsVerification) {
         setOtpData({ userId: result.userId, otp: "" });
         setMode("verifyOtp");
-      } else if (result.needsVerification) {
-        setOtpData({ userId: result.userId, otp: "" });
-        setMode("verifyOtp");
+      } else if (result.success) {
+        onLoginSuccess();
+        onClose();
       } else {
         displayError(result.message || "Signup failed");
       }
     } catch (err) {
       console.error('[AuthModal] Streamer signup error:', err);
       const msg = err.message === "Failed to fetch"
-        ? "Network error: Could not connect to the server. Please check your internet connection."
+        ? "Network error: Could not connect to the server."
         : (err.message || "Signup failed");
       displayError(msg);
     } finally {
@@ -186,13 +178,6 @@ const AuthModal = ({ onClose, onLoginSuccess }) => {
     setIsLoading(true);
     
     try {
-      console.log('📤 Sending blogger signup:', {
-        username: bloggerData.username,
-        niches: bloggerData.niches,
-        email: bloggerData.email,
-        role: "blogger"
-      });
-
       const result = await signup({
         username: bloggerData.username,
         name: bloggerData.username,
@@ -203,21 +188,19 @@ const AuthModal = ({ onClose, onLoginSuccess }) => {
         agreedToTerms: bloggerData.termsAccepted
       });
 
-      console.log('✅ Signup result:', result);
-
-      if (result.success && result.userId) {
+      if (result.success && result.needsVerification) {
         setOtpData({ userId: result.userId, otp: "" });
         setMode("verifyOtp");
-      } else if (result.needsVerification) {
-        setOtpData({ userId: result.userId, otp: "" });
-        setMode("verifyOtp");
+      } else if (result.success) {
+        onLoginSuccess();
+        onClose();
       } else {
         displayError(result.message || "Signup failed");
       }
     } catch (err) {
       console.error('[AuthModal] Blogger signup error:', err);
       const msg = err.message === "Failed to fetch"
-        ? "Network error: Connection to server lost. Please check your internet."
+        ? "Network error: Connection to server lost."
         : (err.message || "Signup failed");
       displayError(msg);
     } finally {
@@ -239,11 +222,7 @@ const AuthModal = ({ onClose, onLoginSuccess }) => {
     setIsLoading(true);
     
     try {
-      console.log('📤 Logging in:', loginData.email);
-
       const result = await login(loginData.email, loginData.password);
-
-      console.log('✅ Login result:', result);
 
       if (result.needsVerification) {
         setOtpData({ userId: result.userId, otp: "" });
@@ -256,10 +235,7 @@ const AuthModal = ({ onClose, onLoginSuccess }) => {
       }
     } catch (err) {
       console.error('[AuthModal] Login error:', err);
-      const msg = err.message === "Failed to fetch"
-        ? "Network error: Check your internet connection."
-        : (err.message || "Login failed");
-      displayError(msg);
+      displayError(err.message || "Login failed");
     } finally {
       setIsLoading(false);
     }
@@ -274,11 +250,8 @@ const AuthModal = ({ onClose, onLoginSuccess }) => {
     setIsLoading(true);
     
     try {
-      console.log('📤 Verifying OTP for user:', otpData.userId);
-
-      const result = await verifyOTP(otpData.userId, otpData.otp);
-
-      console.log('✅ OTP verification result:', result);
+      // FIX: Changed verifyOTP to verifyOtp
+      const result = await verifyOtp(otpData.userId, otpData.otp);
 
       if (result.success) {
         onLoginSuccess();
@@ -288,11 +261,7 @@ const AuthModal = ({ onClose, onLoginSuccess }) => {
       }
     } catch (err) {
       console.error('[AuthModal] OTP verification error:', err);
-      displayError(
-        err.message === "Failed to fetch" 
-          ? "Network error" 
-          : (err.message || "Verification failed")
-      );
+      displayError(err.message || "Verification failed");
     } finally {
       setIsLoading(false);
     }
@@ -302,10 +271,8 @@ const AuthModal = ({ onClose, onLoginSuccess }) => {
     setIsLoading(true);
     
     try {
-      console.log('📤 Resending OTP for user:', otpData.userId);
-
-      await resendOTP(otpData.userId);
-      
+      // FIX: Changed resendOTP to resendOtp
+      await resendOtp(otpData.userId);
       displayError("OTP resent successfully!");
     } catch (err) {
       console.error('[AuthModal] Resend OTP error:', err);
@@ -315,6 +282,7 @@ const AuthModal = ({ onClose, onLoginSuccess }) => {
     }
   };
 
+  // ... (rest of your modal variants and JSX remains the same)
   const modalVariants = {
     hidden: { opacity: 0, scale: 0.8, y: 50 },
     visible: {
@@ -455,7 +423,6 @@ const AuthModal = ({ onClose, onLoginSuccess }) => {
                 />
               </div>
 
-              {/* Streamer Niche Grid */}
               <div className="space-y-3">
                 <label className="text-sm font-medium text-gray-700 dark:text-gray-100 flex items-center gap-2">
                   <FaHashtag /> Select Your Primary Niche
